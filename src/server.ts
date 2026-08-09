@@ -28,13 +28,13 @@ let currentWorker: Worker | undefined;
 /**
  * Absolute tsx loader flags for worker_threads.
  *
- * A bare `--import tsx` fails on Render/Docker with ERR_UNKNOWN_FILE_EXTENSION.
- * Resolving the preflight + loader files to absolute paths matches how `tsx`
- * itself boots Node, and does not depend on module resolution inside the worker.
+ * Use the package export paths (`tsx/preflight`, `tsx`), not `tsx/dist/...`,
+ * which Node rejects with ERR_PACKAGE_PATH_NOT_EXPORTED. Resolving to absolute
+ * filesystem paths matches how the `tsx` CLI itself boots Node.
  */
 function workerExecArgv(): string[] {
-  const preflight = require.resolve("tsx/dist/preflight.cjs");
-  const loader = pathToFileURL(require.resolve("tsx/dist/loader.mjs")).href;
+  const preflight = require.resolve("tsx/preflight");
+  const loader = pathToFileURL(require.resolve("tsx")).href;
   return ["--require", preflight, "--import", loader];
 }
 

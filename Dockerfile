@@ -10,9 +10,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-# swytchcode CLI is required by @swytchcode/runtime (spawnSync).
-# tsx is a production dependency so worker threads inherit a resolvable loader.
-RUN npm ci --omit=dev \
+# Bump this when npm layer cache must be invalidated on Render.
+ARG NPM_CACHE_BUST=2026-08-10-c29
+RUN echo "npm-cache-bust=$NPM_CACHE_BUST" \
+  && npm ci --omit=dev \
   && npm install swytchcode@^2 --no-save \
   && npm cache clean --force
 
@@ -26,6 +27,6 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# Boot Node with the same absolute tsx loader flags the worker thread uses.
-# `npx tsx` works locally but worker_threads on Render need resolvable paths.
-CMD ["node", "--require", "tsx/dist/preflight.cjs", "--import", "tsx/dist/loader.mjs", "src/server.ts"]
+# Use the tsx CLI for the main process; worker threads get absolute loader paths
+# from require.resolve("tsx/preflight") + require.resolve("tsx").
+CMD ["npx", "tsx", "src/server.ts"]
