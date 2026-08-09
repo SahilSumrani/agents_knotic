@@ -1,4 +1,5 @@
 import type { Config } from "../config.ts";
+import type { SiteFetch } from "../health.ts";
 import type { GitHubIntegration } from "../integrations/github.ts";
 import type { JiraIntegration } from "../integrations/jira.ts";
 import type { NetlifyIntegration } from "../integrations/netlify.ts";
@@ -18,6 +19,8 @@ export interface RunContext {
   netlify: NetlifyIntegration;
   notion: NotionIntegration;
   assessor: RiskAssessor;
+  /** How the verify step reaches the deployed site for its smoke test. */
+  fetchSite: SiteFetch;
   run: RunState;
   /** Publishes the current run state to listeners. */
   emit: () => void;

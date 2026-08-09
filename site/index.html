@@ -3,12 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Guarded by Release Sentinel</title>
+    <title>Release Sentinel - live demo site</title>
     <link rel="stylesheet" href="./site.css" />
   </head>
   <body>
     <main>
       <p class="eyebrow">Deployed and self-healed through Swytchcode</p>
+      <!--
+        This headline is the smoke-test marker (HEALTH_CHECK_MARKER). After a
+        deploy publishes, the agent fetches this page and asserts the headline is
+        served; a page that renders without it is not the page we shipped.
+        Editing it is a green build that produces an unhealthy site.
+      -->
       <h1>Guarded by Release Sentinel</h1>
       <p class="lede">
         Every deploy of this page was gated by an AI agent that scored the change,

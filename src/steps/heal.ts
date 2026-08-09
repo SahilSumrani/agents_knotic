@@ -1,6 +1,14 @@
 import type { RunContext } from "./context.ts";
 import type { VerifyOutcome } from "./verify.ts";
 
+/** How the release went wrong, in words a human reading the ticket can act on. */
+const PROBLEM: Record<VerifyOutcome, string> = {
+  succeeded: "was healthy",
+  failed: "failed to build",
+  timeout: "did not settle before the timeout",
+  unhealthy: "published successfully but failed its post-deploy health check",
+};
+
 /**
  * Stage 5: recover from a bad release without being asked.
  *
@@ -47,11 +55,15 @@ export async function heal(
 
   if (jira.configured) {
     const head = run.commits[0];
+    const health = run.healthCheck;
     const body = [
-      `A deploy triggered by Release Sentinel did not reach a healthy state (${reason}).`,
+      `A deploy triggered by Release Sentinel ${PROBLEM[reason]}.`,
       "",
       `Failed deploy: ${failedDeploy?.id ?? "unknown"} (state ${failedDeploy?.state ?? "unknown"})`,
       failedDeploy?.errorMessage ? `Netlify error: ${failedDeploy.errorMessage}` : "",
+      health && !health.healthy
+        ? `Health check: ${health.url} failed ${health.attempts} attempt(s) - ${health.reason}. The build exited zero, so Netlify published it; the served page did not pass the smoke test.`
+        : "",
       run.restoredDeploy
         ? `Production was automatically rolled back to deploy ${run.restoredDeploy.id}.`
         : "No previous successful deploy was available, so production was NOT rolled back. Manual intervention required.",
@@ -70,9 +82,16 @@ export async function heal(
       .join("\n");
 
     const incident = await jira.createIssue({
-      summary: `Incident: deploy ${failedDeploy?.id?.slice(0, 8) ?? "unknown"} failed and was rolled back`,
+      summary: `Incident: deploy ${failedDeploy?.id?.slice(0, 8) ?? "unknown"} ${
+        reason === "unhealthy" ? "failed its health check" : "failed"
+      } and was rolled back`,
       description: body,
-      labels: ["release-sentinel", "incident", "auto-rollback"],
+      labels: [
+        "release-sentinel",
+        "incident",
+        "auto-rollback",
+        ...(reason === "unhealthy" ? ["health-check"] : []),
+      ],
     });
     run.incidentIssue = incident;
     context.log("info", `filed incident ${incident.key}`);

@@ -63,6 +63,16 @@ export function buildReportMarkdown(run: RunState, siteId: string): string {
     lines.push("");
   }
 
+  if (run.healthCheck) {
+    const health = run.healthCheck;
+    lines.push(
+      health.healthy
+        ? `**Health check:** passed on attempt ${health.attempts} - ${health.url} served \`${health.marker}\`.`
+        : `**Health check:** FAILED after ${health.attempts} attempt(s) against ${health.url} - ${health.reason}. The build exited zero, so the deploy published; the served page did not pass the smoke test.`,
+    );
+    lines.push("");
+  }
+
   if (run.restoredDeploy) {
     lines.push(
       `**Rollback:** production was automatically restored to deploy \`${run.restoredDeploy.id}\`.`,

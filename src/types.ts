@@ -76,6 +76,16 @@ export interface DeployRef {
   errorMessage?: string;
 }
 
+/** Result of the post-deploy smoke test against the published site. */
+export interface HealthCheckResult {
+  healthy: boolean;
+  url: string;
+  attempts: number;
+  marker: string;
+  /** Why the site was judged unhealthy; absent when it passed. */
+  reason?: string;
+}
+
 export type RunOutcome =
   | "shipped"
   | "held"
@@ -125,6 +135,7 @@ export interface RunState {
   jiraIssue?: JiraIssueRef;
   incidentIssue?: JiraIssueRef;
   deploy?: DeployRef;
+  healthCheck?: HealthCheckResult;
   restoredDeploy?: DeployRef;
   notionReportUrl?: string;
   swytchcodeCalls: SwytchcodeCallRecord[];

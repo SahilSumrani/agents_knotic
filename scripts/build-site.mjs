@@ -7,6 +7,11 @@
  * script exit non-zero, Netlify reports the deploy as `error`, and Release
  * Sentinel rolls the site back on its own. That is far more honest than faking a
  * failure with a hardcoded `exit 1`.
+ *
+ * It deliberately does NOT validate the page's health marker. The second demo
+ * path needs a build that succeeds while the site it produces is broken, which
+ * is the failure a deploy-state poll can never catch; checking the marker here
+ * would turn that back into an ordinary build failure.
  */
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";

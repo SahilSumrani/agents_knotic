@@ -196,6 +196,14 @@ function renderArtifacts(run) {
   if (run?.incidentIssue?.key) add("Jira incident", run.incidentIssue.key, run.incidentIssue.url);
   if (run?.deploy?.id) add(`Deploy (${run.deploy.state})`, run.deploy.id, run.deploy.url);
   if (run?.deploy?.errorMessage) add("Netlify error", run.deploy.errorMessage);
+  if (run?.healthCheck)
+    add(
+      "Health check",
+      run.healthCheck.healthy
+        ? `passed on attempt ${run.healthCheck.attempts}`
+        : `FAILED after ${run.healthCheck.attempts} attempt(s) - ${run.healthCheck.reason}`,
+      run.healthCheck.url,
+    );
   if (run?.restoredDeploy?.id)
     add("Rolled back to", run.restoredDeploy.id, run.restoredDeploy.url);
   if (run?.notionReportUrl) add("Notion report", "open page", run.notionReportUrl);

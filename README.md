@@ -23,8 +23,9 @@ the end:
   evidence rather than raw diffs.
 - It **acts** on that decision, and the control flow genuinely diverges: a `HOLD`
   never reaches the deploy step.
-- It **verifies** its own work by polling the deploy to a terminal state instead of
-  assuming success.
+- It **verifies** its own work twice over: it polls the deploy to a terminal state,
+  then fetches the published page and asserts it actually serves the content it
+  should. A green build that ships a broken page does not pass.
 - It **recovers** without being asked — cancel, roll back, file the incident, write
   the postmortem.
 
@@ -40,7 +41,7 @@ flowchart TD
         Ingest["1 Ingest<br/>commits, diffs, CI checks"]
         Assess["2 Assess<br/>features + LLM verdict"]
         Act["3 Act<br/>gate or deploy"]
-        Verify["4 Verify<br/>poll to terminal state"]
+        Verify["4 Verify<br/>poll to terminal state<br/>+ fetch the live site"]
         Heal["5 Self-heal<br/>cancel, roll back"]
         Report["6 Report<br/>markdown postmortem"]
     end
@@ -48,8 +49,8 @@ flowchart TD
     Ingest --> Assess --> Act
     Act -->|"HOLD"| Report
     Act -->|"SHIP"| Verify
-    Verify -->|"ready"| Report
-    Verify -->|"error or timeout"| Heal --> Report
+    Verify -->|"ready and healthy"| Report
+    Verify -->|"error, timeout or unhealthy"| Heal --> Report
 
     Ingest -.->|"swytchcode exec"| GH[GitHub]
     Act -.->|"swytchcode exec"| Jira
@@ -207,13 +208,15 @@ npm run typecheck
 demand against a live site without deliberately breaking production, so the branch
 that matters most would otherwise be the least tested. It scripts a deploy failure
 and asserts the agent cancels, restores the previous deploy and files the incident —
-and it covers gating by failing check, gating by threshold, the ship-with-ticket
-middle path, and the clean ship:
+in both flavours: a build that fails, and a build that succeeds while publishing a
+broken page. It also covers gating by failing check, gating by threshold, the
+ship-with-ticket middle path, and the clean ship:
 
 ```
 PASS low-risk change ships and is reported
 PASS failing CI check is gated before any deploy
 PASS failed deploy triggers rollback and an incident
+PASS healthy deploy state but a broken page triggers rollback
 PASS risky dependency bump ships with a follow-up review ticket
 PASS the same change is blocked once the risk threshold is tightened
 ```
@@ -230,13 +233,35 @@ before pointing it at anything you care about.
 ## Demo script
 
 **Healthy path.** Push a small, safe commit. Sentinel ingests it, scores it low,
-ships it, watches the deploy reach `ready`, and appends a release report to Notion.
+ships it, watches the deploy reach `ready`, fetches the published page and confirms
+it still serves the marker, then appends a release report to Notion.
 
-**Recovery path.** Push a commit that breaks the build — rename `site/site.css`
-without updating `index.html`. `scripts/build-site.mjs` exits non-zero, Netlify
-reports the deploy as `error`, and Sentinel cancels it, restores the previous deploy,
-files a Jira incident linked to the run, and writes the postmortem. Nobody asked it
-to.
+**Recovery path — broken page (the one worth demoing).** A build can exit zero and
+still publish something broken, and that is the failure a deploy-state poll can
+never see. Push a commit whose only change is this one line in `site/index.html`:
+
+```diff
+-      <h1>Guarded by Release Sentinel</h1>
++      <h1>TODO: new headline</h1>
+```
+
+`scripts/build-site.mjs` succeeds — nothing is missing, the HTML is valid — so
+Netlify publishes the deploy and reports `ready`. Then Sentinel fetches the live
+URL, does not find `HEALTH_CHECK_MARKER` in the page, retries, gives up, and treats
+the release as failed: it restores the last good deploy, files a Jira incident that
+says the page was published without the expected content, and writes the postmortem.
+The audience watches production break and un-break itself.
+
+Undo it with `git checkout site/index.html` (or push the revert) once the rollback
+has been shown. If you legitimately reword that heading, change
+`HEALTH_CHECK_MARKER` in `.env` to match.
+
+**Recovery path — broken build.** Still supported: push a commit that renames
+`site/site.css` without updating `index.html`. `scripts/build-site.mjs` exits
+non-zero, Netlify reports the deploy as `error`, and Sentinel cancels it, restores
+the previous deploy, files the incident and reports. Note that Netlify never
+publishes this build, so production never visibly changes — which is exactly why
+the health check above makes the better demo.
 
 **Gating path.** To show the gate without touching CI, lower `RISK_THRESHOLD` or push
 a commit touching `package.json` with `hotfix` in the message. The verdict comes back
@@ -267,6 +292,12 @@ one. A missing Notion token costs the report, not the rollback.
 **A timeout is a failure.** An unfinished deploy is not a safe state to leave
 production in, so it triggers recovery rather than an indefinite wait.
 
+**A green build is not a healthy release.** A deploy state only reports the build's
+exit code. The agent fetches the published page and requires a 2xx response
+containing a known marker before it calls a release good; a page that publishes
+without its content rolls back on the same path as a build failure. That is the
+class of failure real deploys actually have.
+
 ---
 
 ## Limitations
@@ -275,6 +306,9 @@ production in, so it triggers recovery rather than an indefinite wait.
   detection is bounded by when a run starts.
 - Run history is in memory. The durable artifacts are the Jira issues, Netlify
   deploys and the Notion page, so a restart loses only the dashboard timeline.
+- The health check reads the served HTML; it does not run JavaScript, so a page
+  that is only broken after hydration still passes. The marker therefore has to be
+  content the server sends.
 - The agent appends to one Notion page rather than creating a page per release,
   because of the bundle defect described above.
 - Rollback assumes a previous successful deploy exists. On a brand-new site there is

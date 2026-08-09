@@ -1,5 +1,6 @@
 import type { ExecArgs } from "@swytchcode/runtime";
 import type { Config } from "./config.ts";
+import type { SiteFetch } from "./health.ts";
 import { runPipeline } from "./pipeline.ts";
 import { SwytchcodeClient } from "./swytch.ts";
 import type { CallOptions } from "./swytch.ts";
@@ -11,12 +12,26 @@ import type { RunOutcome } from "./types.ts";
  * The point is the recovery path: you cannot rehearse a rollback on demand
  * against a live Netlify site without deliberately breaking production, so the
  * branch that matters most would otherwise be the least tested. Here a scripted
- * deploy failure exercises cancel -> restore -> incident every time.
+ * deploy failure exercises cancel -> restore -> incident every time — both when
+ * the build fails and when it succeeds but publishes a broken page.
  *
  * Run with: npm run selftest
  */
 
 type Handler = (args: ExecArgs) => unknown;
+
+/** The marker the deployed page must serve for the release to count as healthy. */
+const MARKER = "Guarded by Release Sentinel";
+
+/** The page the stubbed site serves; scenarios override it to publish a broken one. */
+function servePage(page: { status: number; body: string }): SiteFetch {
+  return async () => page;
+}
+
+const HEALTHY_PAGE = {
+  status: 200,
+  body: `<!doctype html><html><body><h1>${MARKER}</h1></body></html>`,
+};
 
 class StubClient extends SwytchcodeClient {
   readonly seen: string[] = [];
@@ -61,6 +76,14 @@ function baseConfig(): Config {
       auth: "Bearer test",
       reportPageId: "page-1",
       version: "2026-03-11",
+    },
+    health: {
+      enabled: true,
+      url: "",
+      marker: MARKER,
+      attempts: 2,
+      retryDelayMs: 1,
+      timeoutMs: 1_000,
     },
     // No model key: the assessor uses its deterministic heuristic, which keeps
     // these assertions stable and free.
@@ -159,6 +182,8 @@ interface Scenario {
   name: string;
   config?: Partial<Config["agent"]>;
   handlers: Record<string, Handler>;
+  /** What the published site serves; defaults to a healthy page. */
+  page?: { status: number; body: string };
   expect: {
     outcome: RunOutcome;
     verdictAction?: string;
@@ -166,6 +191,7 @@ interface Scenario {
     rolledBack: boolean;
     jiraFiled: boolean;
     incidentFiled: boolean;
+    healthCheckFailed?: boolean;
   };
 }
 
@@ -203,6 +229,26 @@ const scenarios: Scenario[] = [
       rolledBack: true,
       jiraFiled: false,
       incidentFiled: true,
+      healthCheckFailed: false,
+    },
+  },
+  {
+    // The failure a deploy-state poll cannot see: the build exits zero, Netlify
+    // publishes, and the page it serves has lost the content it must render.
+    // Only fetching the site catches it.
+    name: "healthy deploy state but a broken page triggers rollback",
+    handlers: handlers({ deployStates: ["building", "ready"] }),
+    page: {
+      status: 200,
+      body: "<!doctype html><html><body><h1>TODO: new headline</h1></body></html>",
+    },
+    expect: {
+      outcome: "rolled_back",
+      deployed: true,
+      rolledBack: true,
+      jiraFiled: false,
+      incidentFiled: true,
+      healthCheckFailed: true,
     },
   },
   {
@@ -250,7 +296,12 @@ for (const scenario of scenarios) {
   Object.assign(config.agent, scenario.config ?? {});
   const stub = new StubClient(scenario.handlers);
 
-  const run = await runPipeline(config, "manual", {}, { swytch: stub });
+  const run = await runPipeline(
+    config,
+    "manual",
+    {},
+    { swytch: stub, fetchSite: servePage(scenario.page ?? HEALTHY_PAGE) },
+  );
 
   const actual = {
     outcome: run.outcome,
@@ -259,6 +310,7 @@ for (const scenario of scenarios) {
     rolledBack: Boolean(run.restoredDeploy?.id),
     jiraFiled: Boolean(run.jiraIssue?.key),
     incidentFiled: Boolean(run.incidentIssue?.key),
+    healthCheckFailed: run.healthCheck ? !run.healthCheck.healthy : false,
   };
 
   const problems: string[] = [];
@@ -274,6 +326,11 @@ for (const scenario of scenarios) {
   check("rolled back", actual.rolledBack, scenario.expect.rolledBack);
   check("jira filed", actual.jiraFiled, scenario.expect.jiraFiled);
   check("incident filed", actual.incidentFiled, scenario.expect.incidentFiled);
+  check(
+    "health check failed",
+    actual.healthCheckFailed,
+    scenario.expect.healthCheckFailed,
+  );
   if (run.error) problems.push(`run error: ${run.error}`);
 
   if (problems.length === 0) {

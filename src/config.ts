@@ -73,6 +73,24 @@ export interface Config {
      */
     strictSchema: boolean;
   };
+  /**
+   * Post-deploy smoke test. Netlify reporting `ready` only means the build
+   * command exited zero — the published page can still be broken — so the
+   * agent fetches the deployed site before calling a release healthy.
+   */
+  health: {
+    /** When false, a `ready` deploy is accepted without fetching the site. */
+    enabled: boolean;
+    /** Overrides the deploy's own URL; normally left empty. */
+    url: string;
+    /** Text that must appear in the served HTML. */
+    marker: string;
+    /** Attempts before declaring the site unhealthy; CDN propagation is not instant. */
+    attempts: number;
+    retryDelayMs: number;
+    /** Per-request timeout. */
+    timeoutMs: number;
+  };
   agent: {
     /** Risk score at or above which the agent refuses to ship. */
     riskThreshold: number;
@@ -153,6 +171,14 @@ export function loadConfig(): Config {
       version: optional("NOTION_VERSION", "2026-03-11"),
     },
     llm: resolveLlm(),
+    health: {
+      enabled: optional("HEALTH_CHECK_ENABLED", "true") !== "false",
+      url: optional("HEALTH_CHECK_URL"),
+      marker: optional("HEALTH_CHECK_MARKER", "Guarded by Release Sentinel"),
+      attempts: int("HEALTH_CHECK_ATTEMPTS", 4),
+      retryDelayMs: int("HEALTH_CHECK_RETRY_DELAY_MS", 4_000),
+      timeoutMs: int("HEALTH_CHECK_TIMEOUT_MS", 10_000),
+    },
     agent: {
       riskThreshold: int("RISK_THRESHOLD", 65),
       deployTimeoutMs: int("DEPLOY_TIMEOUT_MS", 300_000),

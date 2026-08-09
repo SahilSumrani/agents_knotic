@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { RiskAssessor } from "./agent/risk.ts";
 import type { Config } from "./config.ts";
+import { fetchSite } from "./health.ts";
+import type { SiteFetch } from "./health.ts";
 import { GitHubIntegration } from "./integrations/github.ts";
 import { JiraIntegration } from "./integrations/jira.ts";
 import { NetlifyIntegration } from "./integrations/netlify.ts";
@@ -63,6 +65,11 @@ export interface PipelineOverrides {
    * live services or mutating anyone's Jira project.
    */
   swytch?: SwytchcodeClient;
+  /**
+   * Substitute the HTTP fetch used by the post-deploy health check, so the
+   * selftest can script a deploy that publishes and still serves a broken page.
+   */
+  fetchSite?: SiteFetch;
 }
 
 export async function runPipeline(
@@ -112,6 +119,7 @@ export async function runPipeline(
     netlify: new NetlifyIntegration(swytch, config),
     notion: new NotionIntegration(swytch, config),
     assessor: new RiskAssessor(config),
+    fetchSite: overrides.fetchSite ?? fetchSite,
     run,
     emit,
     log,
