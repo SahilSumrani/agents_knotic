@@ -80,7 +80,7 @@ app.get("/api/state", (_req, res) => {
     siteId: config.netlify.siteId,
     riskThreshold: config.agent.riskThreshold,
     dryRun: config.agent.dryRun,
-    model: config.openai.model,
+    model: `${config.llm.provider}:${config.llm.model}`,
     readiness: checkReadiness(config),
     active: store.active,
     runs: store.list(),

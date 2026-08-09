@@ -61,9 +61,17 @@ export interface Config {
     reportPageId: string;
     version: string;
   };
-  openai: {
+  llm: {
     apiKey: string;
     model: string;
+    /** Set for OpenAI-compatible providers such as Groq. */
+    baseUrl: string | undefined;
+    provider: "openai" | "groq" | "custom";
+    /**
+     * Strict schema adherence is only honoured by some models; when false the
+     * assessor asks for JSON without constrained decoding and validates itself.
+     */
+    strictSchema: boolean;
   };
   agent: {
     /** Risk score at or above which the agent refuses to ship. */
@@ -79,6 +87,40 @@ export interface Config {
   };
   server: {
     port: number;
+  };
+}
+
+/**
+ * Resolves the language model provider.
+ *
+ * Groq speaks the OpenAI wire protocol, so the same SDK works against it with a
+ * different base URL. Strict structured output is only guaranteed on Groq's
+ * `openai/gpt-oss-*` models, so it is enabled for those and left off elsewhere
+ * rather than being requested and silently ignored.
+ */
+function resolveLlm(): Config["llm"] {
+  const groqKey = optional("GROQ_API_KEY");
+  const openaiKey = optional("OPENAI_API_KEY");
+  const explicitBase = optional("LLM_BASE_URL");
+  const explicitModel = optional("LLM_MODEL") || optional("OPENAI_MODEL");
+
+  if (groqKey) {
+    const model = explicitModel || "openai/gpt-oss-20b";
+    return {
+      apiKey: groqKey,
+      model,
+      baseUrl: explicitBase || "https://api.groq.com/openai/v1",
+      provider: "groq",
+      strictSchema: model.startsWith("openai/gpt-oss"),
+    };
+  }
+
+  return {
+    apiKey: openaiKey,
+    model: explicitModel || "gpt-4o-mini",
+    baseUrl: explicitBase || undefined,
+    provider: explicitBase ? "custom" : "openai",
+    strictSchema: true,
   };
 }
 
@@ -110,10 +152,7 @@ export function loadConfig(): Config {
       // The markdown content API is only available on recent API versions.
       version: optional("NOTION_VERSION", "2026-03-11"),
     },
-    openai: {
-      apiKey: optional("OPENAI_API_KEY"),
-      model: optional("OPENAI_MODEL", "gpt-4o-mini"),
-    },
+    llm: resolveLlm(),
     agent: {
       riskThreshold: int("RISK_THRESHOLD", 65),
       deployTimeoutMs: int("DEPLOY_TIMEOUT_MS", 300_000),
@@ -154,7 +193,11 @@ export function checkReadiness(config: Config): ReadinessProblem[] {
   need(Boolean(config.github.owner), "github", "GITHUB_OWNER is not set");
   need(Boolean(config.github.repo), "github", "GITHUB_REPO is not set");
 
-  need(Boolean(config.openai.apiKey), "openai", "OPENAI_API_KEY is not set");
+  need(
+    Boolean(config.llm.apiKey),
+    "llm",
+    "no model key set (GROQ_API_KEY or OPENAI_API_KEY)",
+  );
 
   need(
     config.netlify.auth !== "Bearer ",

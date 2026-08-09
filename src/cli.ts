@@ -38,4 +38,5 @@ const summary = [
 
 console.log(summary);
 
-process.exit(run.outcome === "shipped" || run.outcome === "no_changes" ? 0 : 1);
+process.exitCode =
+  run.outcome === "shipped" || run.outcome === "no_changes" ? 0 : 1;

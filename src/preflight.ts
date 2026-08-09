@@ -149,8 +149,8 @@ results.push(
 );
 
 results.push(
-  await check("openai", async () => {
-    if (!config.openai.apiKey) return "skipped (not configured)";
+  await check("llm", async () => {
+    if (!config.llm.apiKey) return "skipped (not configured)";
     const { RiskAssessor } = await import("./agent/risk.ts");
     const assessor = new RiskAssessor(config);
     const verdict = await assessor.assess(
@@ -191,7 +191,7 @@ results.push(
       },
     );
     if (verdict.degraded) throw new Error(`model unavailable: ${verdict.rationale}`);
-    return `${config.openai.model} scored a trivial change ${verdict.riskScore}/100 -> ${verdict.action}`;
+    return `${config.llm.provider}:${config.llm.model} scored a trivial change ${verdict.riskScore}/100 -> ${verdict.action}`;
   }),
 );
 
@@ -205,4 +205,6 @@ console.log(
   `\n${results.length - failed.length}/${results.length} checks passed.`,
 );
 
-process.exit(failed.length > 0 ? 1 : 0);
+// Setting exitCode rather than calling process.exit() lets Node close its
+// handles cleanly; forcing exit here trips a libuv assertion on Windows.
+process.exitCode = failed.length > 0 ? 1 : 0;

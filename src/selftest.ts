@@ -62,9 +62,15 @@ function baseConfig(): Config {
       reportPageId: "page-1",
       version: "2026-03-11",
     },
-    // No OpenAI key: the assessor uses its deterministic heuristic, which keeps
+    // No model key: the assessor uses its deterministic heuristic, which keeps
     // these assertions stable and free.
-    openai: { apiKey: "", model: "stub" },
+    llm: {
+      apiKey: "",
+      model: "stub",
+      baseUrl: undefined,
+      provider: "openai",
+      strictSchema: true,
+    },
     agent: {
       riskThreshold: 65,
       deployTimeoutMs: 5_000,
@@ -285,4 +291,4 @@ for (const scenario of scenarios) {
 console.log(
   `\n${scenarios.length - failures}/${scenarios.length} scenarios passed.`,
 );
-process.exit(failures > 0 ? 1 : 0);
+process.exitCode = failures > 0 ? 1 : 0;

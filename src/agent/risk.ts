@@ -51,6 +51,40 @@ const RESPONSE_SCHEMA = {
   },
 } as const;
 
+/** Distinguishes "this provider won't do schemas" from a real API failure. */
+function isSchemaRejection(error: unknown): boolean {
+  const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  return (
+    message.includes("json_schema") ||
+    message.includes("response_format") ||
+    message.includes("structured output") ||
+    message.includes("strict")
+  );
+}
+
+const ACTIONS: RiskVerdict["action"][] = ["SHIP", "SHIP_WITH_TICKET", "HOLD"];
+
+/**
+ * Coerces a model response into the verdict shape. With strict schemas this is
+ * a formality, but in JSON mode nothing guarantees types, and a string where a
+ * number belongs would otherwise corrupt the score comparison downstream.
+ */
+function normalizeVerdict(raw: unknown): Omit<RiskVerdict, "degraded"> {
+  const value = (raw ?? {}) as Record<string, unknown>;
+
+  const score = Number(value.riskScore);
+  const action = String(value.action ?? "").toUpperCase() as RiskVerdict["action"];
+
+  return {
+    riskScore: Number.isFinite(score) ? Math.max(0, Math.min(100, Math.round(score))) : 50,
+    action: ACTIONS.includes(action) ? action : "SHIP_WITH_TICKET",
+    rationale: String(value.rationale ?? "no rationale returned by the model"),
+    concerns: Array.isArray(value.concerns) ? value.concerns.map(String) : [],
+    ticketSummary: String(value.ticketSummary ?? "Review release candidate"),
+    ticketDescription: String(value.ticketDescription ?? ""),
+  };
+}
+
 /** Compact evidence payload — full diffs would be costly and add little signal. */
 function buildEvidence(commits: EnrichedCommit[], features: RiskFeatures) {
   return {
@@ -76,8 +110,12 @@ export class RiskAssessor {
   private readonly client: OpenAI | undefined;
 
   constructor(private readonly config: Config) {
-    this.client = config.openai.apiKey
-      ? new OpenAI({ apiKey: config.openai.apiKey })
+    this.client = config.llm.apiKey
+      ? new OpenAI({
+          apiKey: config.llm.apiKey,
+          // Set for OpenAI-compatible providers such as Groq.
+          ...(config.llm.baseUrl ? { baseURL: config.llm.baseUrl } : {}),
+        })
       : undefined;
   }
 
@@ -88,39 +126,79 @@ export class RiskAssessor {
     const floor = heuristicScore(features);
 
     if (!this.client) {
-      return this.fallback(features, floor, "no OPENAI_API_KEY configured");
+      return this.fallback(
+        features,
+        floor,
+        "no model key configured (set GROQ_API_KEY or OPENAI_API_KEY)",
+      );
     }
 
+    const evidence = JSON.stringify(buildEvidence(commits, features), null, 2);
+
     try {
-      const response = await this.client.chat.completions.create({
-        model: this.config.openai.model,
-        temperature: 0,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: JSON.stringify(buildEvidence(commits, features), null, 2),
-          },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "release_risk_verdict",
-            strict: true,
-            schema: RESPONSE_SCHEMA,
-          },
-        },
-      });
-
-      const content = response.choices[0]?.message?.content;
-      if (!content) throw new Error("empty completion");
-
-      const parsed = JSON.parse(content) as Omit<RiskVerdict, "degraded">;
+      let parsed: Omit<RiskVerdict, "degraded">;
+      try {
+        parsed = await this.complete(evidence, true);
+      } catch (error) {
+        // Not every OpenAI-compatible model accepts json_schema. Retrying in
+        // plain JSON mode keeps a real verdict instead of dropping straight to
+        // heuristics because of a provider capability gap.
+        if (!isSchemaRejection(error)) throw error;
+        parsed = await this.complete(evidence, false);
+      }
       return this.reconcile(parsed, features, floor);
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
       return this.fallback(features, floor, detail);
     }
+  }
+
+  private async complete(
+    evidence: string,
+    useSchema: boolean,
+  ): Promise<Omit<RiskVerdict, "degraded">> {
+    if (!this.client) throw new Error("no client");
+
+    // JSON mode requires the word "JSON" in the prompt and gives the model no
+    // schema, so the shape has to be spelled out instead.
+    const instruction = useSchema
+      ? SYSTEM_PROMPT
+      : `${SYSTEM_PROMPT}\n\nRespond with a single JSON object and nothing else, using exactly these keys:\n${JSON.stringify(
+          {
+            riskScore: "integer 0-100",
+            action: "SHIP | SHIP_WITH_TICKET | HOLD",
+            rationale: "string",
+            concerns: ["string"],
+            ticketSummary: "string",
+            ticketDescription: "string",
+          },
+          null,
+          2,
+        )}`;
+
+    const response = await this.client.chat.completions.create({
+      model: this.config.llm.model,
+      temperature: 0,
+      messages: [
+        { role: "system", content: instruction },
+        { role: "user", content: evidence },
+      ],
+      response_format: useSchema
+        ? {
+            type: "json_schema",
+            json_schema: {
+              name: "release_risk_verdict",
+              strict: this.config.llm.strictSchema,
+              schema: RESPONSE_SCHEMA,
+            },
+          }
+        : { type: "json_object" },
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) throw new Error("empty completion");
+
+    return normalizeVerdict(JSON.parse(content));
   }
 
   /**
