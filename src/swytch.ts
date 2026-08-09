@@ -93,12 +93,17 @@ function classify(error: unknown): { message: string; category: string; retryabl
 }
 
 export class SwytchcodeClient {
-  private readonly recorder: CallRecorder | undefined;
+  private recorder: CallRecorder | undefined;
   private readonly globalDryRun: boolean;
 
   constructor(options: { recorder?: CallRecorder; dryRun?: boolean } = {}) {
     this.recorder = options.recorder;
     this.globalDryRun = options.dryRun ?? false;
+  }
+
+  /** Lets the pipeline attach its own audit trail to an injected client. */
+  setRecorder(recorder: CallRecorder): void {
+    this.recorder = recorder;
   }
 
   /**
@@ -170,7 +175,7 @@ export class SwytchcodeClient {
     }
   }
 
-  private record(record: SwytchcodeCallRecord): void {
+  protected record(record: SwytchcodeCallRecord): void {
     this.recorder?.(record);
   }
 }

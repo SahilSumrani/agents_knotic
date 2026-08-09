@@ -13,7 +13,12 @@ import { heal } from "./steps/heal.ts";
 import { ingest } from "./steps/ingest.ts";
 import { report } from "./steps/report.ts";
 import { verify } from "./steps/verify.ts";
-import type { RunState, StepName, StepStatus } from "./types.ts";
+import type {
+  RunState,
+  StepName,
+  StepStatus,
+  SwytchcodeCallRecord,
+} from "./types.ts";
 
 /**
  * The agent loop as an explicit state machine.
@@ -51,10 +56,20 @@ export interface PipelineHooks {
   onLog?: (entry: { at: string; level: string; message: string }) => void;
 }
 
+export interface PipelineOverrides {
+  /**
+   * Substitute the Swytchcode client. Used by `npm run selftest` to drive the
+   * state machine through its branches — including rollback — without touching
+   * live services or mutating anyone's Jira project.
+   */
+  swytch?: SwytchcodeClient;
+}
+
 export async function runPipeline(
   config: Config,
   trigger: RunState["trigger"] = "manual",
   hooks: PipelineHooks = {},
+  overrides: PipelineOverrides = {},
 ): Promise<RunState> {
   const run = emptyRun(trigger);
 
@@ -82,12 +97,13 @@ export async function runPipeline(
 
   // Every integration call lands in the run record, which is what the dashboard
   // shows and what makes the Swytchcode usage auditable after the fact.
-  const swytch = new SwytchcodeClient({
-    recorder: (record) => {
-      run.swytchcodeCalls.push(record);
-      emit();
-    },
-  });
+  const recorder = (record: SwytchcodeCallRecord) => {
+    run.swytchcodeCalls.push(record);
+    emit();
+  };
+  const swytch =
+    overrides.swytch ?? new SwytchcodeClient({ recorder });
+  swytch.setRecorder(recorder);
 
   const context: RunContext = {
     config,

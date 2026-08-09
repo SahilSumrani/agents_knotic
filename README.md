@@ -199,6 +199,23 @@ token paste.
 ```bash
 npm start        # dashboard on http://localhost:3000
 npm run run:once # one headless pass, non-zero exit if the release was not healthy
+npm run selftest # drive every branch of the state machine against a stubbed kernel
+npm run typecheck
+```
+
+`npm run selftest` matters more than it looks. You cannot rehearse a rollback on
+demand against a live site without deliberately breaking production, so the branch
+that matters most would otherwise be the least tested. It scripts a deploy failure
+and asserts the agent cancels, restores the previous deploy and files the incident —
+and it covers gating by failing check, gating by threshold, the ship-with-ticket
+middle path, and the clean ship:
+
+```
+PASS low-risk change ships and is reported
+PASS failing CI check is gated before any deploy
+PASS failed deploy triggers rollback and an incident
+PASS risky dependency bump ships with a follow-up review ticket
+PASS the same change is blocked once the risk threshold is tightened
 ```
 
 The dashboard streams the agent loop live: each stage's status, the risk gauge and

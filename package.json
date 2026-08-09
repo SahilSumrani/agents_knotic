@@ -13,6 +13,7 @@
     "run:once": "tsx src/cli.ts",
     "preflight": "tsx src/preflight.ts",
     "build:site": "node scripts/build-site.mjs",
+    "selftest": "tsx src/selftest.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
