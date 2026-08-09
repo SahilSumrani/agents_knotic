@@ -3,26 +3,140 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Release Sentinel - live demo site</title>
+    <title>Release Sentinel — live site under autonomous guard</title>
+    <meta
+      name="description"
+      content="This page is guarded by Release Sentinel: an AI agent that scores risk, deploys via Netlify, verifies production, and rolls back through Swytchcode."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="./site.css" />
   </head>
   <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <header class="top">
+      <a class="brand" href="./index.html">Release Sentinel</a>
+      <nav>
+        <a href="https://github.com/SahilSumrani/agents_knotic" target="_blank" rel="noreferrer"
+          >Source</a
+        >
+        <a href="#loop">How it works</a>
+      </nav>
+    </header>
+
     <main>
-      <p class="eyebrow">Deployed and self-healed through Swytchcode</p>
-      <!--
-        This headline is the smoke-test marker (HEALTH_CHECK_MARKER). After a
-        deploy publishes, the agent fetches this page and asserts the headline is
-        served; a page that renders without it is not the page we shipped.
-        Editing it is a green build that produces an unhealthy site.
-      -->
-      <h1>Guarded by Release Sentinel</h1>
-      <p class="lede">
-        Every deploy of this page was gated by an AI agent that scored the change,
-        decided whether it was safe to ship, verified the result, and rolled the
-        site back if it was not.
-      </p>
-      <p class="build">Build <span id="stamp">development</span></p>
+      <section class="hero">
+        <p class="eyebrow">Deployed and self-healed through Swytchcode</p>
+        <!--
+          This headline is the smoke-test marker (HEALTH_CHECK_MARKER). After a
+          deploy publishes, the agent fetches this page and asserts the headline is
+          served; a page that renders without it is not the page we shipped.
+          Editing it is a green build that produces an unhealthy site.
+        -->
+        <h1>Guarded by Release Sentinel</h1>
+        <p class="lede">
+          Every deploy of this page was gated by an AI agent that scored the change,
+          decided whether it was safe to ship, verified the result, and rolled the
+          site back if it was not.
+        </p>
+        <div class="cta-row">
+          <a
+            class="btn primary"
+            href="https://github.com/SahilSumrani/agents_knotic"
+            target="_blank"
+            rel="noreferrer"
+            >View on GitHub</a
+          >
+          <a class="btn ghost" href="#loop">See the agent loop</a>
+        </div>
+        <p class="build">Build <span id="stamp">development</span></p>
+      </section>
+
+      <section class="strip" aria-label="What this URL is">
+        <p>
+          This is the <strong>live site under guard</strong> — not the agent control
+          panel. The panel runs on the operator machine and acts on this URL through
+          Swytchcode.
+        </p>
+      </section>
+
+      <section id="loop" class="loop">
+        <p class="section-kicker">Agent loop</p>
+        <h2>Six steps. One decision. Real side effects.</h2>
+        <p class="section-lede">
+          GitHub → risk score → Netlify deploy or Jira hold → fetch this page →
+          rollback if broken → Notion report. Four integrations, zero vendor SDKs.
+        </p>
+
+        <ol class="steps">
+          <li>
+            <span class="n">01</span>
+            <div>
+              <h3>Ingest</h3>
+              <p>Commits, diffs, CI signals, and PRs from GitHub.</p>
+            </div>
+          </li>
+          <li>
+            <span class="n">02</span>
+            <div>
+              <h3>Assess</h3>
+              <p>Features + Groq verdict. Heuristic floor so shipping stays honest.</p>
+            </div>
+          </li>
+          <li>
+            <span class="n">03</span>
+            <div>
+              <h3>Act</h3>
+              <p>Hold with a Jira ticket, or trigger a real Netlify build.</p>
+            </div>
+          </li>
+          <li>
+            <span class="n">04</span>
+            <div>
+              <h3>Verify</h3>
+              <p>Poll deploy state, then GET this page for the marker above.</p>
+            </div>
+          </li>
+          <li>
+            <span class="n">05</span>
+            <div>
+              <h3>Heal</h3>
+              <p>Restore a good deploy, re-check production, file a Jira incident.</p>
+            </div>
+          </li>
+          <li>
+            <span class="n">06</span>
+            <div>
+              <h3>Report</h3>
+              <p>Append the release or incident write-up to Notion.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="proof">
+        <p class="section-kicker">Proven live</p>
+        <h2>Not a slide deck.</h2>
+        <ul>
+          <li>Real Netlify deploys triggered and rolled back</li>
+          <li>Real Jira review tickets and incidents filed</li>
+          <li>Real Notion reports written via Swytchcode</li>
+          <li>Offline selftest covers every branch, including rollback</li>
+        </ul>
+      </section>
     </main>
+
+    <footer>
+      <p>
+        Built for the Build with Swytchcode Buildathon · Track 3 · with KNOTiC
+      </p>
+    </footer>
+
     <script src="./site.js"></script>
   </body>
 </html>
