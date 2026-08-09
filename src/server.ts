@@ -23,6 +23,21 @@ app.use(express.static(join(here, "..", "public")));
 
 let currentWorker: Worker | undefined;
 
+/** Loader flags the worker thread needs to execute TypeScript sources. */
+function workerExecArgv(): string[] {
+  const inherited: string[] = [];
+  for (let i = 0; i < process.execArgv.length; i += 1) {
+    const arg = process.execArgv[i]!;
+    if (arg === "--eval" || arg === "-e") {
+      i += 1; // skip the eval payload too
+      continue;
+    }
+    inherited.push(arg);
+  }
+  if (inherited.some((arg) => arg.includes("tsx"))) return inherited;
+  return ["--import", "tsx"];
+}
+
 function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: string } {
   // One run at a time: concurrent runs would race on the same Netlify site and
   // could roll back a deploy another run is still verifying.
@@ -30,9 +45,11 @@ function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: stri
 
   const worker = new Worker(join(here, "worker.ts"), {
     workerData: { trigger },
-    // tsx registers the TypeScript loader for the main thread only; workers need
-    // it applied explicitly or the .ts entrypoint will not load.
-    execArgv: ["--import", "tsx"],
+    // tsx boots the main thread with --require preflight + an absolute
+    // --import of loader.mjs. A bare `--import tsx` is not enough for worker
+    // threads (Render hit ERR_UNKNOWN_FILE_EXTENSION on worker.ts). Inherit
+    // the parent flags, stripping any --eval used by one-off CLI invocations.
+    execArgv: workerExecArgv(),
   });
   currentWorker = worker;
 

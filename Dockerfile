@@ -10,10 +10,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-# tsx is listed under devDependencies but is required to boot src/server.ts.
 # swytchcode CLI is required by @swytchcode/runtime (spawnSync).
+# tsx is a production dependency so worker threads inherit a resolvable loader.
 RUN npm ci --omit=dev \
-  && npm install tsx swytchcode@^2 --no-save \
+  && npm install swytchcode@^2 --no-save \
   && npm cache clean --force
 
 # App source + Swytchcode tooling (methods already enabled in tooling.json).
