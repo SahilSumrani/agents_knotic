@@ -38,6 +38,7 @@ function toDeployRef(raw: RawDeploy | undefined): DeployRef {
     url: raw?.deploy_ssl_url ?? raw?.ssl_url ?? raw?.deploy_url ?? raw?.url,
     adminUrl: raw?.admin_url,
     errorMessage: raw?.error_message,
+    commitRef: raw?.commit_ref,
   };
 }
 
@@ -131,15 +132,34 @@ export class NetlifyIntegration {
   }
 
   /**
-   * The last deploy that successfully published, excluding `excludeId`. This is
-   * the rollback target after a failed release.
+   * Rollback targets, newest first.
+   *
+   * `state: ready` alone is not enough. A green build that serves a broken page
+   * is also `ready`, and Netlify's own git CD builds the same commit the agent
+   * did, so the list usually holds a second `ready` deploy of the very commit
+   * that just failed. Restoring that would republish the same broken site, so
+   * every deploy built from `excludeCommitRef` is skipped too.
    */
-  async lastGoodDeploy(excludeId?: string): Promise<DeployRef | undefined> {
+  async goodDeployCandidates(
+    excludeId?: string,
+    excludeCommitRef?: string,
+  ): Promise<DeployRef[]> {
     const deploys = await this.listDeploys(20);
-    return deploys.find(
+    return deploys.filter(
       (deploy) =>
-        deploy.id !== excludeId && SUCCESS_STATES.has(deploy.state.toLowerCase()),
+        deploy.id !== excludeId &&
+        SUCCESS_STATES.has(deploy.state.toLowerCase()) &&
+        (!excludeCommitRef || deploy.commitRef !== excludeCommitRef),
     );
+  }
+
+  /** The newest viable rollback target, or undefined if there is none. */
+  async lastGoodDeploy(
+    excludeId?: string,
+    excludeCommitRef?: string,
+  ): Promise<DeployRef | undefined> {
+    const [candidate] = await this.goodDeployCandidates(excludeId, excludeCommitRef);
+    return candidate;
   }
 
   /** Polls until the deploy reaches a terminal state or the timeout elapses. */

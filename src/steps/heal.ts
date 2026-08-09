@@ -1,5 +1,15 @@
+import { checkSiteHealth } from "../health.ts";
+import type { DeployRef } from "../types.ts";
 import type { RunContext } from "./context.ts";
 import type { VerifyOutcome } from "./verify.ts";
+
+/**
+ * How many older deploys to walk before giving up. A rollback target can itself
+ * be unhealthy — most often because Netlify's git CD published the same broken
+ * commit the agent did — so the agent keeps stepping back through history until
+ * production actually serves a good page.
+ */
+const MAX_ROLLBACK_ATTEMPTS = 3;
 
 /** How the release went wrong, in words a human reading the ticket can act on. */
 const PROBLEM: Record<VerifyOutcome, string> = {
@@ -36,22 +46,7 @@ export async function heal(
     }
   }
 
-  const lastGood = await netlify.lastGoodDeploy(failedDeploy?.id);
-
-  if (lastGood?.id) {
-    const restored = await netlify.restoreDeploy(lastGood.id);
-    run.restoredDeploy = restored;
-    context.log(
-      "info",
-      `rolled production back to deploy ${lastGood.id} (${restored.url ?? "no url"})`,
-    );
-    context.emit();
-  } else {
-    context.log(
-      "warn",
-      "no previously successful deploy found; nothing to roll back to",
-    );
-  }
+  await rollBack(context, failedDeploy);
 
   if (jira.configured) {
     const head = run.commits[0];
@@ -67,6 +62,11 @@ export async function heal(
       run.restoredDeploy
         ? `Production was automatically rolled back to deploy ${run.restoredDeploy.id}.`
         : "No previous successful deploy was available, so production was NOT rolled back. Manual intervention required.",
+      run.rollbackHealth
+        ? run.rollbackHealth.healthy
+          ? `Post-rollback check: ${run.rollbackHealth.url} is serving the expected page again.`
+          : `Post-rollback check: ${run.rollbackHealth.url} is STILL unhealthy - ${run.rollbackHealth.reason}. Manual intervention required.`
+        : "",
       "",
       `Candidate commit: ${head?.shortSha ?? "unknown"} - ${head?.message ?? ""}`,
       head?.url ? `Commit: ${head.url}` : "",
@@ -114,9 +114,71 @@ export async function heal(
     "ok",
     [
       run.restoredDeploy ? `rolled back to ${run.restoredDeploy.id}` : "no rollback target",
+      run.rollbackHealth?.healthy ? "production verified healthy" : undefined,
+      run.rollbackHealth && !run.rollbackHealth.healthy
+        ? "production still unhealthy"
+        : undefined,
       run.incidentIssue ? `incident ${run.incidentIssue.key}` : undefined,
     ]
       .filter(Boolean)
       .join(", "),
+  );
+}
+
+/**
+ * Republishes the newest deploy that is both successful and built from a
+ * different commit than the one that just failed, then proves production is
+ * serving a good page before declaring the rollback done.
+ */
+async function rollBack(
+  context: RunContext,
+  failedDeploy: DeployRef | undefined,
+): Promise<void> {
+  const { netlify, run, config } = context;
+
+  const candidates = await netlify.goodDeployCandidates(
+    failedDeploy?.id,
+    failedDeploy?.commitRef,
+  );
+
+  if (candidates.length === 0) {
+    context.log("warn", "no previously successful deploy found; nothing to roll back to");
+    return;
+  }
+
+  for (const candidate of candidates.slice(0, MAX_ROLLBACK_ATTEMPTS)) {
+    const restored = await netlify.restoreDeploy(candidate.id);
+    run.restoredDeploy = restored;
+    context.log(
+      "info",
+      `rolled production back to deploy ${candidate.id} (${restored.url ?? "no url"})`,
+    );
+    context.emit();
+
+    if (!config.health.enabled) return;
+
+    const url = config.health.url || restored.url || candidate.url;
+    if (!url) return;
+
+    const health = await checkSiteHealth(url, config.health, {
+      fetchSite: context.fetchSite,
+    });
+    run.rollbackHealth = health;
+    context.emit();
+
+    if (health.healthy) {
+      context.log("info", `production verified healthy after rollback (${url})`);
+      return;
+    }
+
+    context.log(
+      "warn",
+      `deploy ${candidate.id} is also unhealthy (${health.reason}); stepping further back`,
+    );
+  }
+
+  context.log(
+    "error",
+    "rolled back but production is still unhealthy; manual intervention required",
   );
 }

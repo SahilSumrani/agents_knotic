@@ -74,6 +74,8 @@ export interface DeployRef {
   url?: string;
   adminUrl?: string;
   errorMessage?: string;
+  /** The commit this deploy was built from; used to pick a rollback target. */
+  commitRef?: string;
 }
 
 /** Result of the post-deploy smoke test against the published site. */
@@ -137,6 +139,8 @@ export interface RunState {
   deploy?: DeployRef;
   healthCheck?: HealthCheckResult;
   restoredDeploy?: DeployRef;
+  /** Proof that the deploy we rolled back to is actually serving a good page. */
+  rollbackHealth?: HealthCheckResult;
   notionReportUrl?: string;
   swytchcodeCalls: SwytchcodeCallRecord[];
   logs: { at: string; level: string; message: string }[];
