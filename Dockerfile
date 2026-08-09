@@ -4,29 +4,29 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# System deps some native packages expect; keep the image small otherwise.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-# Bump this when npm layer cache must be invalidated on Render.
-ARG NPM_CACHE_BUST=2026-08-10-childproc
+# Bump when npm layer cache must be invalidated on Render.
+ARG NPM_CACHE_BUST=2026-08-10-bootstrap
 RUN echo "npm-cache-bust=$NPM_CACHE_BUST" \
   && npm ci --omit=dev \
   && npm install swytchcode@^2 --no-save \
   && npm cache clean --force
 
-# App source + Swytchcode tooling (methods already enabled in tooling.json).
 COPY tsconfig.json ./
 COPY src ./src
 COPY public ./public
 COPY .swytchcode ./.swytchcode
+COPY scripts/docker-entrypoint.sh ./scripts/docker-entrypoint.sh
+RUN chmod +x ./scripts/docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# Use the tsx CLI for the main process; worker threads get absolute loader paths
-# from require.resolve("tsx/preflight") + require.resolve("tsx").
-CMD ["npx", "tsx", "src/server.ts"]
+# Bundles are not in git; entrypoint runs `swytchcode bootstrap` on first boot
+# using SWYTCHCODE_TOKEN from the Render environment, then starts the server.
+CMD ["./scripts/docker-entrypoint.sh"]
