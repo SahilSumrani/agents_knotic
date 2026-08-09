@@ -1,0 +1,18 @@
+node_modules/
+.env
+.env.local
+*.log
+dist/
+.DS_Store
+
+# Swytchcode: tooling.json is the trust boundary and manifest.json pins each
+# integration's endpoints, so both are committed. The integration bundles are
+# large and re-fetchable with `swytchcode get`, and workspace.json is local
+# account state, so neither belongs in version control.
+.swytchcode/integrations/*/
+.swytchcode/workspace.json
+.swytchcode/credentials*
+.swytchcode/**/*.secret
+
+# Local run history produced by the agent
+data/runs/

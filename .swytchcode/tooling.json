@@ -1,0 +1,5139 @@
+{
+  "editor": "cursor",
+  "integrations": {
+    "GitHub.github": {
+      "version": "1.1.4"
+    },
+    "Jira.jira": {
+      "version": "v1"
+    },
+    "Netlify.netlify": {
+      "version": "v1"
+    },
+    "Notion.notion": {
+      "version": "2.0.0"
+    }
+  },
+  "mode": "production",
+  "tools": {
+    "github.commit.checkRuns.get": {
+      "desc": "Lists check runs for a commit ref. The `ref` can be a SHA, branch name, or a tag name.\n\n\u003e [!NOTE]\n\u003e The endpoints to manage checks only look for pushes in the repository where the check suite or check run were created. Pushes to a branch in a forked repository are not detected and return an empty `pull_requests` array.\n\nIf there are more than 1000 check suites on a single git reference, this endpoint will limit check runs to the 1000 most recent check suites. To iterate over all possible check runs, use the [List check suites for a Git reference](https://docs.github.com/rest/reference/checks#list-check-suites-for-a-git-reference) endpoint and provide the `check_suite_id` parameter to the [List check runs in a check suite](https://docs.github.com/rest/reference/checks#list-check-runs-in-a-check-suite) endpoint.\n\nOAuth app tokens and personal access tokens (classic) need the `repo` scope to use this endpoint on a private repository.",
+      "inputs": [
+        {
+          "owner": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "repo": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "ref": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "check_name": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "status": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "filter": {
+            "DEFAULT": "latest",
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "per_page": {
+            "DEFAULT": 30,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "page": {
+            "DEFAULT": 1,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "app_id": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        }
+      ],
+      "integration": "GitHub.github@1.1.4",
+      "method_hash": "348c7c3fca35478cf53ac4eeb9a6bf1b528c17916105acb51434e112854cb98c",
+      "output": {
+        "schema": {
+          "properties": {
+            "check_runs": {
+              "items": {
+                "properties": {
+                  "app": {
+                    "properties": {
+                      "client_id": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "required": true,
+                        "type": "TIMESTAMP"
+                      },
+                      "description": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "events": {
+                        "required": true,
+                        "type": "[]STRING"
+                      },
+                      "external_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "html_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "id": {
+                        "required": true,
+                        "type": "integer"
+                      },
+                      "installations_count": {
+                        "required": false,
+                        "type": "integer"
+                      },
+                      "name": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "node_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "owner": {
+                        "required": true,
+                        "type": "any"
+                      },
+                      "permissions": {
+                        "required": true,
+                        "type": "map[STRING]STRING"
+                      },
+                      "slug": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "required": true,
+                        "type": "TIMESTAMP"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "node_id",
+                      "owner",
+                      "name",
+                      "description",
+                      "external_url",
+                      "html_url",
+                      "created_at",
+                      "updated_at",
+                      "permissions",
+                      "events"
+                    ],
+                    "type": "object"
+                  },
+                  "check_suite": {
+                    "required": true,
+                    "type": "object"
+                  },
+                  "completed_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "conclusion": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "deployment": {
+                    "properties": {
+                      "created_at": {
+                        "required": true,
+                        "type": "TIMESTAMP"
+                      },
+                      "description": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "environment": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "id": {
+                        "required": true,
+                        "type": "integer"
+                      },
+                      "node_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "original_environment": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "performed_via_github_app": {
+                        "properties": {
+                          "client_id": {
+                            "required": false,
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "required": true,
+                            "type": "TIMESTAMP"
+                          },
+                          "description": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "events": {
+                            "required": true,
+                            "type": "[]STRING"
+                          },
+                          "external_url": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "html_url": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "id": {
+                            "required": true,
+                            "type": "integer"
+                          },
+                          "installations_count": {
+                            "required": false,
+                            "type": "integer"
+                          },
+                          "name": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "node_id": {
+                            "required": true,
+                            "type": "string"
+                          },
+                          "owner": {
+                            "required": true,
+                            "type": "any"
+                          },
+                          "permissions": {
+                            "required": true,
+                            "type": "map[STRING]STRING"
+                          },
+                          "slug": {
+                            "required": false,
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "required": true,
+                            "type": "TIMESTAMP"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "node_id",
+                          "owner",
+                          "name",
+                          "description",
+                          "external_url",
+                          "html_url",
+                          "created_at",
+                          "updated_at",
+                          "permissions",
+                          "events"
+                        ],
+                        "type": "object"
+                      },
+                      "production_environment": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "repository_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "statuses_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "task": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "transient_environment": {
+                        "required": false,
+                        "type": "boolean"
+                      },
+                      "updated_at": {
+                        "required": true,
+                        "type": "TIMESTAMP"
+                      },
+                      "url": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "id",
+                      "node_id",
+                      "task",
+                      "environment",
+                      "description",
+                      "created_at",
+                      "updated_at",
+                      "statuses_url",
+                      "repository_url"
+                    ],
+                    "type": "object"
+                  },
+                  "details_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "external_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "head_sha": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "html_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "id": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "node_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "output": {
+                    "required": true,
+                    "type": "object"
+                  },
+                  "pull_requests": {
+                    "items": {
+                      "properties": {
+                        "base": {
+                          "required": true,
+                          "type": "object"
+                        },
+                        "head": {
+                          "required": true,
+                          "type": "object"
+                        },
+                        "id": {
+                          "required": true,
+                          "type": "integer"
+                        },
+                        "number": {
+                          "required": true,
+                          "type": "integer"
+                        },
+                        "url": {
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "number",
+                        "url",
+                        "head",
+                        "base"
+                      ],
+                      "type": "object"
+                    },
+                    "required": true,
+                    "type": "array"
+                  },
+                  "started_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "status": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "url": {
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "head_sha",
+                  "node_id",
+                  "external_id",
+                  "url",
+                  "html_url",
+                  "details_url",
+                  "status",
+                  "conclusion",
+                  "started_at",
+                  "completed_at",
+                  "output",
+                  "name",
+                  "check_suite",
+                  "app",
+                  "pull_requests"
+                ],
+                "type": "object"
+              },
+              "required": true,
+              "type": "array"
+            },
+            "total_count": {
+              "required": true,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "total_count",
+            "check_runs"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "List check runs for a Git reference",
+      "type": "method"
+    },
+    "github.commit.get.1": {
+      "desc": "**Signature verification object**\n\nThe response will include a `verification` object that describes the result of verifying the commit's signature. The following fields are included in the `verification` object:\n\n| Name | Type | Description |\n| ---- | ---- | ----------- |\n| `verified` | `boolean` | Indicates whether GitHub considers the signature in this commit to be verified. |\n| `reason` | `string` | The reason for verified value. Possible values and their meanings are enumerated in table below. |\n| `signature` | `string` | The signature that was extracted from the commit. |\n| `payload` | `string` | The value that was signed. |\n| `verified_at` | `string` | The date the signature was verified by GitHub. |\n\nThese are the possible values for `reason` in the `verification` object:\n\n| Value | Description |\n| ----- | ----------- |\n| `expired_key` | The key that made the signature is expired. |\n| `not_signing_key` | The \"signing\" flag is not among the usage flags in the GPG key that made the signature. |\n| `gpgverify_error` | There was an error communicating with the signature verification service. |\n| `gpgverify_unavailable` | The signature verification service is currently unavailable. |\n| `unsigned` | The object does not include a signature. |\n| `unknown_signature_type` | A non-PGP signature was found in the commit. |\n| `no_user` | No user was associated with the `committer` email address in the commit. |\n| `unverified_email` | The `committer` email address in the commit was associated with a user, but the email address is not verified on their account. |\n| `bad_email` | The `committer` email address in the commit is not included in the identities of the PGP key that made the signature. |\n| `unknown_key` | The key that made the signature has not been registered with any user's account. |\n| `malformed_signature` | There was an error parsing the signature. |\n| `invalid` | The signature could not be cryptographically verified using the key whose key-id was found in the signature. |\n| `valid` | None of the above errors applied, so the signature is considered to be verified. |",
+      "inputs": [
+        {
+          "owner": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "repo": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "sha": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "path": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "author": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "committer": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "since": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "TIMESTAMP"
+          }
+        },
+        {
+          "until": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "TIMESTAMP"
+          }
+        },
+        {
+          "per_page": {
+            "DEFAULT": 30,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "page": {
+            "DEFAULT": 1,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        }
+      ],
+      "integration": "GitHub.github@1.1.4",
+      "method_hash": "745302d54a0e3583f7fbde10b9e8923574af621df9b9034a3296a09900b64665",
+      "output": {
+        "schema": {
+          "items": {
+            "properties": {
+              "author": {
+                "required": true,
+                "type": "any"
+              },
+              "comments_url": {
+                "required": true,
+                "type": "string"
+              },
+              "commit": {
+                "required": true,
+                "type": "object"
+              },
+              "committer": {
+                "required": true,
+                "type": "any"
+              },
+              "files": {
+                "items": {
+                  "properties": {
+                    "additions": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "blob_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "changes": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "contents_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "deletions": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "filename": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "patch": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "previous_filename": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "raw_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "sha": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "sha",
+                    "filename",
+                    "status",
+                    "additions",
+                    "deletions",
+                    "changes",
+                    "blob_url",
+                    "raw_url",
+                    "contents_url"
+                  ],
+                  "type": "object"
+                },
+                "required": false,
+                "type": "array"
+              },
+              "html_url": {
+                "required": true,
+                "type": "string"
+              },
+              "node_id": {
+                "required": true,
+                "type": "string"
+              },
+              "parents": {
+                "required": true,
+                "type": "[]ANY"
+              },
+              "sha": {
+                "required": true,
+                "type": "string"
+              },
+              "stats": {
+                "required": false,
+                "type": "object"
+              },
+              "url": {
+                "required": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "url",
+              "sha",
+              "node_id",
+              "html_url",
+              "comments_url",
+              "commit",
+              "author",
+              "committer",
+              "parents"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "status": 200
+      },
+      "summary": "List commits",
+      "type": "method"
+    },
+    "github.commit.get.2": {
+      "desc": "Returns the contents of a single commit reference. You must have `read` access for the repository to use this endpoint.\n\n\u003e [!NOTE]\n\u003e If there are more than 300 files in the commit diff and the default JSON media type is requested, the response will include pagination link headers for the remaining files, up to a limit of 3000 files. Each page contains the static commit information, and the only changes are to the file listing.\n\nThis endpoint supports the following custom media types. For more information, see \"[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types).\" Pagination query parameters are not supported for these media types.\n\n- **`application/vnd.github.diff`**: Returns the diff of the commit. Larger diffs may time out and return a 5xx status code.\n- **`application/vnd.github.patch`**: Returns the patch of the commit. Diffs with binary data will have no `patch` property. Larger diffs may time out and return a 5xx status code.\n- **`application/vnd.github.sha`**: Returns the commit's SHA-1 hash. You can use this endpoint to check if a remote reference's SHA-1 hash is the same as your local reference's SHA-1 hash by providing the local SHA-1 reference as the ETag.\n\n**Signature verification object**\n\nThe response will include a `verification` object that describes the result of verifying the commit's signature. The following fields are included in the `verification` object:\n\n| Name | Type | Description |\n| ---- | ---- | ----------- |\n| `verified` | `boolean` | Indicates whether GitHub considers the signature in this commit to be verified. |\n| `reason` | `string` | The reason for verified value. Possible values and their meanings are enumerated in table below. |\n| `signature` | `string` | The signature that was extracted from the commit. |\n| `payload` | `string` | The value that was signed. |\n| `verified_at` | `string` | The date the signature was verified by GitHub. |\n\nThese are the possible values for `reason` in the `verification` object:\n\n| Value | Description |\n| ----- | ----------- |\n| `expired_key` | The key that made the signature is expired. |\n| `not_signing_key` | The \"signing\" flag is not among the usage flags in the GPG key that made the signature. |\n| `gpgverify_error` | There was an error communicating with the signature verification service. |\n| `gpgverify_unavailable` | The signature verification service is currently unavailable. |\n| `unsigned` | The object does not include a signature. |\n| `unknown_signature_type` | A non-PGP signature was found in the commit. |\n| `no_user` | No user was associated with the `committer` email address in the commit. |\n| `unverified_email` | The `committer` email address in the commit was associated with a user, but the email address is not verified on their account. |\n| `bad_email` | The `committer` email address in the commit is not included in the identities of the PGP key that made the signature. |\n| `unknown_key` | The key that made the signature has not been registered with any user's account. |\n| `malformed_signature` | There was an error parsing the signature. |\n| `invalid` | The signature could not be cryptographically verified using the key whose key-id was found in the signature. |\n| `valid` | None of the above errors applied, so the signature is considered to be verified. |",
+      "inputs": [
+        {
+          "owner": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "repo": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "page": {
+            "DEFAULT": 1,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "per_page": {
+            "DEFAULT": 30,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "ref": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "GitHub.github@1.1.4",
+      "method_hash": "76b0086a6ffa80e9b6e0fd0e0c10494c27274300b8e721685da0ebc83ff45775",
+      "output": {
+        "schema": {
+          "properties": {
+            "author": {
+              "required": true,
+              "type": "any"
+            },
+            "comments_url": {
+              "required": true,
+              "type": "string"
+            },
+            "commit": {
+              "required": true,
+              "type": "object"
+            },
+            "committer": {
+              "required": true,
+              "type": "any"
+            },
+            "files": {
+              "items": {
+                "properties": {
+                  "additions": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "blob_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "changes": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "contents_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "deletions": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "filename": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "patch": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "previous_filename": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "raw_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "sha": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "status": {
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sha",
+                  "filename",
+                  "status",
+                  "additions",
+                  "deletions",
+                  "changes",
+                  "blob_url",
+                  "raw_url",
+                  "contents_url"
+                ],
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "html_url": {
+              "required": true,
+              "type": "string"
+            },
+            "node_id": {
+              "required": true,
+              "type": "string"
+            },
+            "parents": {
+              "required": true,
+              "type": "[]ANY"
+            },
+            "sha": {
+              "required": true,
+              "type": "string"
+            },
+            "stats": {
+              "required": false,
+              "type": "object"
+            },
+            "url": {
+              "required": true,
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "sha",
+            "node_id",
+            "html_url",
+            "comments_url",
+            "commit",
+            "author",
+            "committer",
+            "parents"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Get a commit",
+      "type": "method"
+    },
+    "github.commit.pulls.get": {
+      "desc": "Lists the merged pull request that introduced the commit to the repository. If the commit is not present in the default branch, it will return merged and open pull requests associated with the commit.\n\nTo list the open or merged pull requests associated with a branch, you can set the `commit_sha` parameter to the branch name.",
+      "inputs": [
+        {
+          "owner": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "repo": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "commit_sha": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "per_page": {
+            "DEFAULT": 30,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "page": {
+            "DEFAULT": 1,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        }
+      ],
+      "integration": "GitHub.github@1.1.4",
+      "method_hash": "c2733d5bba00320804ed58ef3df4930726a55571c27777941748af8f4650938c",
+      "output": {
+        "schema": {
+          "items": {
+            "properties": {
+              "_links": {
+                "required": true,
+                "type": "object"
+              },
+              "active_lock_reason": {
+                "required": false,
+                "type": "string"
+              },
+              "assignee": {
+                "properties": {
+                  "avatar_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "email": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "events_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "followers_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "following_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "gists_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "gravatar_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "html_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "id": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "login": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "node_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "organizations_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "received_events_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "repos_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "site_admin": {
+                    "required": true,
+                    "type": "boolean"
+                  },
+                  "starred_at": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "starred_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "subscriptions_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "type": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "user_view_type": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "login",
+                  "id",
+                  "node_id",
+                  "avatar_url",
+                  "gravatar_id",
+                  "url",
+                  "html_url",
+                  "followers_url",
+                  "following_url",
+                  "gists_url",
+                  "starred_url",
+                  "subscriptions_url",
+                  "organizations_url",
+                  "repos_url",
+                  "events_url",
+                  "received_events_url",
+                  "type",
+                  "site_admin"
+                ],
+                "type": "object"
+              },
+              "assignees": {
+                "items": {
+                  "properties": {
+                    "avatar_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "email": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "followers_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "following_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gists_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gravatar_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "html_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "login": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "node_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "organizations_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "received_events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "repos_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "site_admin": {
+                      "required": true,
+                      "type": "boolean"
+                    },
+                    "starred_at": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "starred_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "subscriptions_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "user_view_type": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "login",
+                    "id",
+                    "node_id",
+                    "avatar_url",
+                    "gravatar_id",
+                    "url",
+                    "html_url",
+                    "followers_url",
+                    "following_url",
+                    "gists_url",
+                    "starred_url",
+                    "subscriptions_url",
+                    "organizations_url",
+                    "repos_url",
+                    "events_url",
+                    "received_events_url",
+                    "type",
+                    "site_admin"
+                  ],
+                  "type": "object"
+                },
+                "required": false,
+                "type": "array"
+              },
+              "author_association": {
+                "required": true,
+                "type": "string"
+              },
+              "auto_merge": {
+                "properties": {
+                  "commit_message": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "commit_title": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "enabled_by": {
+                    "properties": {
+                      "avatar_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "email": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "events_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "followers_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "following_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "gists_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "gravatar_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "html_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "id": {
+                        "required": true,
+                        "type": "integer"
+                      },
+                      "login": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "node_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "organizations_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "received_events_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "repos_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "site_admin": {
+                        "required": true,
+                        "type": "boolean"
+                      },
+                      "starred_at": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "starred_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "subscriptions_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "user_view_type": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "login",
+                      "id",
+                      "node_id",
+                      "avatar_url",
+                      "gravatar_id",
+                      "url",
+                      "html_url",
+                      "followers_url",
+                      "following_url",
+                      "gists_url",
+                      "starred_url",
+                      "subscriptions_url",
+                      "organizations_url",
+                      "repos_url",
+                      "events_url",
+                      "received_events_url",
+                      "type",
+                      "site_admin"
+                    ],
+                    "type": "object"
+                  },
+                  "merge_method": {
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "enabled_by",
+                  "merge_method",
+                  "commit_title",
+                  "commit_message"
+                ],
+                "type": "object"
+              },
+              "base": {
+                "required": true,
+                "type": "object"
+              },
+              "body": {
+                "required": true,
+                "type": "string"
+              },
+              "closed_at": {
+                "required": true,
+                "type": "TIMESTAMP"
+              },
+              "comments_url": {
+                "required": true,
+                "type": "string"
+              },
+              "commits_url": {
+                "required": true,
+                "type": "string"
+              },
+              "created_at": {
+                "required": true,
+                "type": "TIMESTAMP"
+              },
+              "diff_url": {
+                "required": true,
+                "type": "string"
+              },
+              "draft": {
+                "required": false,
+                "type": "boolean"
+              },
+              "head": {
+                "required": true,
+                "type": "object"
+              },
+              "html_url": {
+                "required": true,
+                "type": "string"
+              },
+              "id": {
+                "required": true,
+                "type": "integer"
+              },
+              "issue_url": {
+                "required": true,
+                "type": "string"
+              },
+              "labels": {
+                "required": true,
+                "type": "[]ANY"
+              },
+              "locked": {
+                "required": true,
+                "type": "boolean"
+              },
+              "merge_commit_sha": {
+                "required": true,
+                "type": "string"
+              },
+              "merged_at": {
+                "required": true,
+                "type": "TIMESTAMP"
+              },
+              "milestone": {
+                "properties": {
+                  "closed_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "closed_issues": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "created_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "creator": {
+                    "properties": {
+                      "avatar_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "email": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "events_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "followers_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "following_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "gists_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "gravatar_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "html_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "id": {
+                        "required": true,
+                        "type": "integer"
+                      },
+                      "login": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "node_id": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "organizations_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "received_events_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "repos_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "site_admin": {
+                        "required": true,
+                        "type": "boolean"
+                      },
+                      "starred_at": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "starred_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "subscriptions_url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "type": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "url": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "user_view_type": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "login",
+                      "id",
+                      "node_id",
+                      "avatar_url",
+                      "gravatar_id",
+                      "url",
+                      "html_url",
+                      "followers_url",
+                      "following_url",
+                      "gists_url",
+                      "starred_url",
+                      "subscriptions_url",
+                      "organizations_url",
+                      "repos_url",
+                      "events_url",
+                      "received_events_url",
+                      "type",
+                      "site_admin"
+                    ],
+                    "type": "object"
+                  },
+                  "description": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "due_on": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "html_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "id": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "labels_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "node_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "number": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "open_issues": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "state": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "title": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "updated_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "url": {
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "html_url",
+                  "labels_url",
+                  "id",
+                  "node_id",
+                  "number",
+                  "state",
+                  "title",
+                  "description",
+                  "creator",
+                  "open_issues",
+                  "closed_issues",
+                  "created_at",
+                  "updated_at",
+                  "closed_at",
+                  "due_on"
+                ],
+                "type": "object"
+              },
+              "node_id": {
+                "required": true,
+                "type": "string"
+              },
+              "number": {
+                "required": true,
+                "type": "integer"
+              },
+              "patch_url": {
+                "required": true,
+                "type": "string"
+              },
+              "requested_reviewers": {
+                "items": {
+                  "properties": {
+                    "avatar_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "email": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "followers_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "following_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gists_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gravatar_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "html_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "login": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "node_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "organizations_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "received_events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "repos_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "site_admin": {
+                      "required": true,
+                      "type": "boolean"
+                    },
+                    "starred_at": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "starred_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "subscriptions_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "user_view_type": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "login",
+                    "id",
+                    "node_id",
+                    "avatar_url",
+                    "gravatar_id",
+                    "url",
+                    "html_url",
+                    "followers_url",
+                    "following_url",
+                    "gists_url",
+                    "starred_url",
+                    "subscriptions_url",
+                    "organizations_url",
+                    "repos_url",
+                    "events_url",
+                    "received_events_url",
+                    "type",
+                    "site_admin"
+                  ],
+                  "type": "object"
+                },
+                "required": false,
+                "type": "array"
+              },
+              "requested_teams": {
+                "items": {
+                  "properties": {
+                    "access_source": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "description": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "enterprise_id": {
+                      "required": false,
+                      "type": "integer"
+                    },
+                    "html_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "members_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "node_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "notification_setting": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "organization_id": {
+                      "required": false,
+                      "type": "integer"
+                    },
+                    "parent": {
+                      "properties": {
+                        "description": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "enterprise_id": {
+                          "required": false,
+                          "type": "integer"
+                        },
+                        "html_url": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "id": {
+                          "required": true,
+                          "type": "integer"
+                        },
+                        "ldap_dn": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "members_url": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "name": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "node_id": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "notification_setting": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "organization_id": {
+                          "required": false,
+                          "type": "integer"
+                        },
+                        "permission": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "privacy": {
+                          "required": false,
+                          "type": "string"
+                        },
+                        "repositories_url": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "slug": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "required": true,
+                          "type": "string"
+                        },
+                        "url": {
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "node_id",
+                        "url",
+                        "members_url",
+                        "name",
+                        "description",
+                        "permission",
+                        "html_url",
+                        "repositories_url",
+                        "slug",
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "permission": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "permissions": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "privacy": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "repositories_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "slug": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "node_id",
+                    "name",
+                    "slug",
+                    "description",
+                    "permission",
+                    "url",
+                    "html_url",
+                    "members_url",
+                    "repositories_url",
+                    "type",
+                    "parent"
+                  ],
+                  "type": "object"
+                },
+                "required": false,
+                "type": "array"
+              },
+              "review_comment_url": {
+                "required": true,
+                "type": "string"
+              },
+              "review_comments_url": {
+                "required": true,
+                "type": "string"
+              },
+              "state": {
+                "required": true,
+                "type": "string"
+              },
+              "statuses_url": {
+                "required": true,
+                "type": "string"
+              },
+              "title": {
+                "required": true,
+                "type": "string"
+              },
+              "updated_at": {
+                "required": true,
+                "type": "TIMESTAMP"
+              },
+              "url": {
+                "required": true,
+                "type": "string"
+              },
+              "user": {
+                "properties": {
+                  "avatar_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "email": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "events_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "followers_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "following_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "gists_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "gravatar_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "html_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "id": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "login": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "node_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "organizations_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "received_events_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "repos_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "site_admin": {
+                    "required": true,
+                    "type": "boolean"
+                  },
+                  "starred_at": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "starred_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "subscriptions_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "type": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "user_view_type": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "login",
+                  "id",
+                  "node_id",
+                  "avatar_url",
+                  "gravatar_id",
+                  "url",
+                  "html_url",
+                  "followers_url",
+                  "following_url",
+                  "gists_url",
+                  "starred_url",
+                  "subscriptions_url",
+                  "organizations_url",
+                  "repos_url",
+                  "events_url",
+                  "received_events_url",
+                  "type",
+                  "site_admin"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "url",
+              "id",
+              "node_id",
+              "html_url",
+              "diff_url",
+              "patch_url",
+              "issue_url",
+              "commits_url",
+              "review_comments_url",
+              "review_comment_url",
+              "comments_url",
+              "statuses_url",
+              "number",
+              "state",
+              "locked",
+              "title",
+              "user",
+              "body",
+              "labels",
+              "milestone",
+              "created_at",
+              "updated_at",
+              "closed_at",
+              "merged_at",
+              "merge_commit_sha",
+              "assignee",
+              "head",
+              "base",
+              "_links",
+              "author_association",
+              "auto_merge"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "status": 200
+      },
+      "summary": "List pull requests associated with a commit",
+      "type": "method"
+    },
+    "github.commit.status.get": {
+      "desc": "Users with pull access in a repository can access a combined view of commit statuses for a given ref. The ref can be a SHA, a branch name, or a tag name.\n\nAdditionally, a combined `state` is returned. The `state` is one of:\n\n*   **failure** if any of the contexts report as `error` or `failure`\n*   **pending** if there are no statuses or a context is `pending`\n*   **success** if the latest status for all contexts is `success`",
+      "inputs": [
+        {
+          "owner": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "repo": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "ref": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "per_page": {
+            "DEFAULT": 30,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "page": {
+            "DEFAULT": 1,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        }
+      ],
+      "integration": "GitHub.github@1.1.4",
+      "method_hash": "31bc872de90b724a77f8e848f90de0b2393fabcf446c916252eed07a367b157a",
+      "output": {
+        "schema": {
+          "properties": {
+            "commit_url": {
+              "required": true,
+              "type": "string"
+            },
+            "repository": {
+              "properties": {
+                "allow_forking": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "archive_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "archived": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "assignees_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "blobs_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "branches_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "clone_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "code_of_conduct": {
+                  "properties": {
+                    "body": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "html_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "key": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "required": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name",
+                    "url",
+                    "html_url"
+                  ],
+                  "type": "object"
+                },
+                "collaborators_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "comments_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "commits_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "compare_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "contents_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "contributors_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "created_at": {
+                  "required": false,
+                  "type": "TIMESTAMP"
+                },
+                "custom_properties": {
+                  "required": false,
+                  "type": "map[STRING]ANY"
+                },
+                "default_branch": {
+                  "required": false,
+                  "type": "string"
+                },
+                "delete_branch_on_merge": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "deployments_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "description": {
+                  "required": true,
+                  "type": "string"
+                },
+                "disabled": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "downloads_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "events_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "fork": {
+                  "required": true,
+                  "type": "boolean"
+                },
+                "forks": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "forks_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "forks_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "full_name": {
+                  "required": true,
+                  "type": "string"
+                },
+                "git_commits_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "git_refs_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "git_tags_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "git_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "has_discussions": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_downloads": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_issues": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_pages": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_projects": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_pull_requests": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "has_wiki": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "homepage": {
+                  "required": false,
+                  "type": "string"
+                },
+                "hooks_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "html_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "id": {
+                  "required": true,
+                  "type": "integer"
+                },
+                "is_template": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "issue_comment_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "issue_events_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "issues_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "keys_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "labels_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "language": {
+                  "required": false,
+                  "type": "string"
+                },
+                "languages_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "license": {
+                  "required": false,
+                  "type": "object"
+                },
+                "merges_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "milestones_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "mirror_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "name": {
+                  "required": true,
+                  "type": "string"
+                },
+                "network_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "node_id": {
+                  "required": true,
+                  "type": "string"
+                },
+                "notifications_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "open_issues": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "open_issues_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "owner": {
+                  "properties": {
+                    "avatar_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "email": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "followers_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "following_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gists_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "gravatar_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "html_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "required": true,
+                      "type": "integer"
+                    },
+                    "login": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "node_id": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "organizations_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "received_events_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "repos_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "site_admin": {
+                      "required": true,
+                      "type": "boolean"
+                    },
+                    "starred_at": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "starred_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "subscriptions_url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "required": true,
+                      "type": "string"
+                    },
+                    "user_view_type": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "login",
+                    "id",
+                    "node_id",
+                    "avatar_url",
+                    "gravatar_id",
+                    "url",
+                    "html_url",
+                    "followers_url",
+                    "following_url",
+                    "gists_url",
+                    "starred_url",
+                    "subscriptions_url",
+                    "organizations_url",
+                    "repos_url",
+                    "events_url",
+                    "received_events_url",
+                    "type",
+                    "site_admin"
+                  ],
+                  "type": "object"
+                },
+                "permissions": {
+                  "required": false,
+                  "type": "object"
+                },
+                "private": {
+                  "required": true,
+                  "type": "boolean"
+                },
+                "pull_request_creation_policy": {
+                  "required": false,
+                  "type": "string"
+                },
+                "pulls_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "pushed_at": {
+                  "required": false,
+                  "type": "TIMESTAMP"
+                },
+                "releases_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "role_name": {
+                  "required": false,
+                  "type": "string"
+                },
+                "security_and_analysis": {
+                  "properties": {
+                    "advanced_security": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "code_security": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "dependabot_security_updates": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_ai_detection": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_delegated_alert_dismissal": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_delegated_bypass": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_delegated_bypass_options": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_non_provider_patterns": {
+                      "required": false,
+                      "type": "object"
+                    },
+                    "secret_scanning_push_protection": {
+                      "required": false,
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "size": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "ssh_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "stargazers_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "stargazers_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "statuses_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "subscribers_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "subscribers_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "subscription_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "svn_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "tags_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "teams_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "temp_clone_token": {
+                  "required": false,
+                  "type": "string"
+                },
+                "topics": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "trees_url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "updated_at": {
+                  "required": false,
+                  "type": "TIMESTAMP"
+                },
+                "url": {
+                  "required": true,
+                  "type": "string"
+                },
+                "visibility": {
+                  "required": false,
+                  "type": "string"
+                },
+                "watchers": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "watchers_count": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "web_commit_signoff_required": {
+                  "required": false,
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "node_id",
+                "name",
+                "full_name",
+                "owner",
+                "private",
+                "html_url",
+                "description",
+                "fork",
+                "url",
+                "archive_url",
+                "assignees_url",
+                "blobs_url",
+                "branches_url",
+                "collaborators_url",
+                "comments_url",
+                "commits_url",
+                "compare_url",
+                "contents_url",
+                "contributors_url",
+                "deployments_url",
+                "downloads_url",
+                "events_url",
+                "forks_url",
+                "git_commits_url",
+                "git_refs_url",
+                "git_tags_url",
+                "issue_comment_url",
+                "issue_events_url",
+                "issues_url",
+                "keys_url",
+                "labels_url",
+                "languages_url",
+                "merges_url",
+                "milestones_url",
+                "notifications_url",
+                "pulls_url",
+                "releases_url",
+                "stargazers_url",
+                "statuses_url",
+                "subscribers_url",
+                "subscription_url",
+                "tags_url",
+                "teams_url",
+                "trees_url",
+                "hooks_url"
+              ],
+              "type": "object"
+            },
+            "sha": {
+              "required": true,
+              "type": "string"
+            },
+            "state": {
+              "required": true,
+              "type": "string"
+            },
+            "statuses": {
+              "items": {
+                "properties": {
+                  "avatar_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "context": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "created_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "description": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "id": {
+                    "required": true,
+                    "type": "integer"
+                  },
+                  "node_id": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "required": {
+                    "required": false,
+                    "type": "boolean"
+                  },
+                  "state": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "target_url": {
+                    "required": true,
+                    "type": "string"
+                  },
+                  "updated_at": {
+                    "required": true,
+                    "type": "TIMESTAMP"
+                  },
+                  "url": {
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "description",
+                  "id",
+                  "node_id",
+                  "state",
+                  "context",
+                  "target_url",
+                  "avatar_url",
+                  "url",
+                  "created_at",
+                  "updated_at"
+                ],
+                "type": "object"
+              },
+              "required": true,
+              "type": "array"
+            },
+            "total_count": {
+              "required": true,
+              "type": "integer"
+            },
+            "url": {
+              "required": true,
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "statuses",
+            "sha",
+            "total_count",
+            "repository",
+            "commit_url",
+            "url"
+          ]
+        },
+        "status": 200
+      },
+      "summary": "Get the combined status for a specific reference",
+      "type": "method"
+    },
+    "jira.api.comment.create": {
+      "desc": "Adds a comment to an issue.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:**\n\n *  *Browse projects* and *Add comments* [ project permission](https://confluence.atlassian.com/x/yodKLg) for the project that the issue containing the comment is in.\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.",
+      "inputs": [
+        {
+          "issueIdOrKey": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "expand": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "author": {
+                  "required": false,
+                  "type": "any"
+                },
+                "body": {
+                  "required": false,
+                  "type": "any"
+                },
+                "created": {
+                  "required": false,
+                  "type": "TIMESTAMP"
+                },
+                "id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "jsdAuthorCanSeeRequest": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "jsdPublic": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "properties": {
+                  "items": {
+                    "properties": {
+                      "key": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "any"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "renderedBody": {
+                  "required": false,
+                  "type": "string"
+                },
+                "self": {
+                  "required": false,
+                  "type": "string"
+                },
+                "updateAuthor": {
+                  "required": false,
+                  "type": "any"
+                },
+                "updated": {
+                  "required": false,
+                  "type": "TIMESTAMP"
+                },
+                "visibility": {
+                  "required": false,
+                  "type": "any"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Jira.jira@v1",
+      "method_hash": "312403b6602f79ef1d09cc7be795939b37217ca14f726fc5099d92553f7bbb7a",
+      "output": {
+        "schema": {
+          "properties": {
+            "author": {
+              "required": false,
+              "type": "any"
+            },
+            "body": {
+              "required": false,
+              "type": "any"
+            },
+            "created": {
+              "required": false,
+              "type": "TIMESTAMP"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "jsdAuthorCanSeeRequest": {
+              "required": false,
+              "type": "boolean"
+            },
+            "jsdPublic": {
+              "required": false,
+              "type": "boolean"
+            },
+            "properties": {
+              "items": {
+                "properties": {
+                  "key": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "value": {
+                    "required": false,
+                    "type": "any"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "renderedBody": {
+              "required": false,
+              "type": "string"
+            },
+            "self": {
+              "required": false,
+              "type": "string"
+            },
+            "updateAuthor": {
+              "required": false,
+              "type": "any"
+            },
+            "updated": {
+              "required": false,
+              "type": "TIMESTAMP"
+            },
+            "visibility": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 201
+      },
+      "summary": "Add comment",
+      "type": "method"
+    },
+    "jira.api.issue.create": {
+      "desc": "Creates an issue or, where the option to create subtasks is enabled in Jira, a subtask. A transition may be applied, to move the issue or subtask to a workflow step other than the default start step, and issue properties set.\n\nThe content of the issue or subtask is defined using `update` and `fields`. The fields that can be set in the issue or subtask are determined using the [ Get create issue metadata](#api-rest-api-3-issue-createmeta-get). These are the same fields that appear on the issue's create screen. Note that the `description`, `environment`, and any `textarea` type custom fields (multi-line text fields) take Atlassian Document Format content. Single line custom fields (`textfield`) accept a string and don't handle Atlassian Document Format content.\n\nCreating a subtask differs from creating an issue as follows:\n\n *  `issueType` must be set to a subtask issue type (use [ Get create issue metadata](#api-rest-api-3-issue-createmeta-get) to find subtask issue types).\n *  `parent` must contain the ID or key of the parent issue.\n\nIn a next-gen project any issue may be made a child providing that the parent and child are members of the same project.\n\n**[Permissions](#permissions) required:** *Browse projects* and *Create issues* [project permissions](https://confluence.atlassian.com/x/yodKLg) for the project in which the issue or subtask is created.",
+      "inputs": [
+        {
+          "updateHistory": {
+            "DEFAULT": false,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "fields": {
+                  "required": false,
+                  "type": "map[STRING]ANY"
+                },
+                "historyMetadata": {
+                  "required": false,
+                  "type": "any"
+                },
+                "properties": {
+                  "items": {
+                    "properties": {
+                      "key": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "value": {
+                        "required": false,
+                        "type": "any"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "transition": {
+                  "required": false,
+                  "type": "any"
+                },
+                "update": {
+                  "required": false,
+                  "type": "map[STRING]ANY"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Jira.jira@v1",
+      "method_hash": "5b2193a87f305089d8ef18d3ecb50544e25bb148bc4980374a27ff5f88a8a192",
+      "output": {
+        "schema": {
+          "properties": {
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "key": {
+              "required": false,
+              "type": "string"
+            },
+            "self": {
+              "required": false,
+              "type": "string"
+            },
+            "transition": {
+              "required": false,
+              "type": "any"
+            },
+            "watchers": {
+              "required": false,
+              "type": "any"
+            }
+          }
+        },
+        "status": 201
+      },
+      "summary": "Create issue",
+      "type": "method"
+    },
+    "jira.api.issueLink.create": {
+      "desc": "Creates a link between two issues. Use this operation to indicate a relationship between two issues and optionally add a comment to the from (outward) issue. To use this resource the site must have [Issue Linking](https://confluence.atlassian.com/x/yoXKM) enabled.\n\nThis resource returns nothing on the creation of an issue link. To obtain the ID of the issue link, use `https://your-domain.atlassian.net/rest/api/3/issue/[linked issue key]?fields=issuelinks`.\n\nIf the link request duplicates a link, the response indicates that the issue link was created. If the request included a comment, the comment is added.\n\nThis operation can be accessed anonymously.\n\n**[Permissions](#permissions) required:**\n\n *  *Browse project* [project permission](https://confluence.atlassian.com/x/yodKLg) for all the projects containing the issues to be linked,\n *  *Link issues* [project permission](https://confluence.atlassian.com/x/yodKLg) on the project containing the from (outward) issue,\n *  If [issue-level security](https://confluence.atlassian.com/x/J4lKLg) is configured, issue-level security permission to view the issue.\n *  If the comment has visibility restrictions, belongs to the group or has the role visibility is restricted to.",
+      "inputs": [
+        {
+          "body": {
+            "LOCATION": "body",
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "comment": {
+                  "properties": {
+                    "author": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "body": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "created": {
+                      "required": false,
+                      "type": "TIMESTAMP"
+                    },
+                    "id": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "jsdAuthorCanSeeRequest": {
+                      "required": false,
+                      "type": "boolean"
+                    },
+                    "jsdPublic": {
+                      "required": false,
+                      "type": "boolean"
+                    },
+                    "properties": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "required": false,
+                            "type": "string"
+                          },
+                          "value": {
+                            "required": false,
+                            "type": "any"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "required": false,
+                      "type": "array"
+                    },
+                    "renderedBody": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "self": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "updateAuthor": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "updated": {
+                      "required": false,
+                      "type": "TIMESTAMP"
+                    },
+                    "visibility": {
+                      "required": false,
+                      "type": "any"
+                    }
+                  },
+                  "type": "object"
+                },
+                "inwardIssue": {
+                  "properties": {
+                    "fields": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "id": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "key": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "self": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "outwardIssue": {
+                  "properties": {
+                    "fields": {
+                      "required": false,
+                      "type": "any"
+                    },
+                    "id": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "key": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "self": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": {
+                  "properties": {
+                    "id": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "inward": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "outward": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "self": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "required": [
+                "inwardIssue",
+                "outwardIssue",
+                "type"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Jira.jira@v1",
+      "method_hash": "4255f6b001d11b2e660efeaf186afc440cf6b5bcf892e90964150c9543249e46",
+      "output": {
+        "schema": {
+          "type": "any"
+        },
+        "status": 201
+      },
+      "summary": "Create issue link",
+      "type": "method"
+    },
+    "netlify.build.create": {
+      "desc": "Runs a build for a site. The build will be scheduled to run at the first opportunity, but it might not start immediately if insufficient account build capacity is available.\n\nFiles for build can be uploaded as a zipped site using one of these methods:\n1. Set Content-Type to 'application/zip' and send the zip file as the raw request body\n2. Set Content-Type to 'multipart/form-data' and include the zip file in the 'zip' field\n",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "branch": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "clear_cache": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "image": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "template_id": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "title": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "zip": {
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "f9cc76c8d2b8cbc783ebef7839308b35ab0d93cde442d1b58aa5a702b2304e87",
+      "output": {
+        "schema": {
+          "properties": {
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_id": {
+              "required": false,
+              "type": "string"
+            },
+            "done": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error": {
+              "required": false,
+              "type": "string"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "sha": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Runs a build for a site",
+      "type": "method"
+    },
+    "netlify.cancel.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "deploy_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "53ddecdc23804fb3a4aa73f7c0e14aa9def58ac5eca768e7dca42f753684a33f",
+      "output": {
+        "schema": {
+          "properties": {
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch": {
+              "required": false,
+              "type": "string"
+            },
+            "build_id": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_ref": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_url": {
+              "required": false,
+              "type": "string"
+            },
+            "context": {
+              "required": false,
+              "type": "string"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "draft": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error_message": {
+              "required": false,
+              "type": "string"
+            },
+            "framework": {
+              "required": false,
+              "type": "string"
+            },
+            "function_schedules": {
+              "items": {
+                "properties": {
+                  "cron": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "functions_region_overrides": {
+              "required": false,
+              "type": "[]ANY"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "locked": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "published_at": {
+              "required": false,
+              "type": "string"
+            },
+            "required": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_edge_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "review_id": {
+              "required": false,
+              "type": "FLOAT"
+            },
+            "review_url": {
+              "required": false,
+              "type": "string"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "site_id": {
+              "required": false,
+              "type": "string"
+            },
+            "skew_protection_token": {
+              "required": false,
+              "type": "string"
+            },
+            "skipped": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "title": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 201
+      },
+      "summary": "Perform operation cancelSiteDeploy",
+      "type": "method"
+    },
+    "netlify.deploy.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "deploy-previews": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "production": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "state": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "branch": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "latest-published": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "title": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "async": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "branch": {
+                  "required": false,
+                  "type": "string"
+                },
+                "draft": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "edge_functions": {
+                  "required": false,
+                  "type": "object"
+                },
+                "environment": {
+                  "items": {
+                    "properties": {
+                      "is_secret": {
+                        "required": true,
+                        "type": "boolean"
+                      },
+                      "key": {
+                        "required": true,
+                        "type": "string"
+                      },
+                      "scopes": {
+                        "required": true,
+                        "type": "[]STRING"
+                      },
+                      "value": {
+                        "required": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "value",
+                      "is_secret",
+                      "scopes"
+                    ],
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "files": {
+                  "required": false,
+                  "type": "object"
+                },
+                "framework": {
+                  "required": false,
+                  "type": "string"
+                },
+                "framework_version": {
+                  "required": false,
+                  "type": "string"
+                },
+                "function_schedules": {
+                  "items": {
+                    "properties": {
+                      "cron": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "functions": {
+                  "required": false,
+                  "type": "object"
+                },
+                "functions_config": {
+                  "required": false,
+                  "type": "map[STRING]ANY"
+                },
+                "zip": {
+                  "required": false,
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "93ba50544034d860768e0318790e8546ca105483c226dbd68419670507a2656a",
+      "output": {
+        "schema": {
+          "properties": {
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch": {
+              "required": false,
+              "type": "string"
+            },
+            "build_id": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_ref": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_url": {
+              "required": false,
+              "type": "string"
+            },
+            "context": {
+              "required": false,
+              "type": "string"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "draft": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error_message": {
+              "required": false,
+              "type": "string"
+            },
+            "framework": {
+              "required": false,
+              "type": "string"
+            },
+            "function_schedules": {
+              "items": {
+                "properties": {
+                  "cron": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "functions_region_overrides": {
+              "required": false,
+              "type": "[]ANY"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "locked": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "published_at": {
+              "required": false,
+              "type": "string"
+            },
+            "required": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_edge_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "review_id": {
+              "required": false,
+              "type": "FLOAT"
+            },
+            "review_url": {
+              "required": false,
+              "type": "string"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "site_id": {
+              "required": false,
+              "type": "string"
+            },
+            "skew_protection_token": {
+              "required": false,
+              "type": "string"
+            },
+            "skipped": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "title": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Perform operation createSiteDeploy",
+      "type": "method"
+    },
+    "netlify.deploy.get": {
+      "desc": "",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "deploy-previews": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "production": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "state": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "branch": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "latest-published": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "8b21f5e0b4d95d879de385a3e1d7606e6365d094d8fc6b6efeb584afd30fec66",
+      "output": {
+        "schema": {
+          "items": {
+            "properties": {
+              "admin_url": {
+                "required": false,
+                "type": "string"
+              },
+              "branch": {
+                "required": false,
+                "type": "string"
+              },
+              "build_id": {
+                "required": false,
+                "type": "string"
+              },
+              "commit_ref": {
+                "required": false,
+                "type": "string"
+              },
+              "commit_url": {
+                "required": false,
+                "type": "string"
+              },
+              "context": {
+                "required": false,
+                "type": "string"
+              },
+              "created_at": {
+                "required": false,
+                "type": "string"
+              },
+              "deploy_ssl_url": {
+                "required": false,
+                "type": "string"
+              },
+              "deploy_url": {
+                "required": false,
+                "type": "string"
+              },
+              "draft": {
+                "required": false,
+                "type": "boolean"
+              },
+              "error_message": {
+                "required": false,
+                "type": "string"
+              },
+              "framework": {
+                "required": false,
+                "type": "string"
+              },
+              "function_schedules": {
+                "items": {
+                  "properties": {
+                    "cron": {
+                      "required": false,
+                      "type": "string"
+                    },
+                    "name": {
+                      "required": false,
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "required": false,
+                "type": "array"
+              },
+              "functions_region": {
+                "required": false,
+                "type": "string"
+              },
+              "functions_region_overrides": {
+                "required": false,
+                "type": "[]ANY"
+              },
+              "id": {
+                "required": false,
+                "type": "string"
+              },
+              "locked": {
+                "required": false,
+                "type": "boolean"
+              },
+              "name": {
+                "required": false,
+                "type": "string"
+              },
+              "published_at": {
+                "required": false,
+                "type": "string"
+              },
+              "required": {
+                "required": false,
+                "type": "[]STRING"
+              },
+              "required_edge_functions": {
+                "required": false,
+                "type": "[]STRING"
+              },
+              "required_functions": {
+                "required": false,
+                "type": "[]STRING"
+              },
+              "review_id": {
+                "required": false,
+                "type": "FLOAT"
+              },
+              "review_url": {
+                "required": false,
+                "type": "string"
+              },
+              "screenshot_url": {
+                "required": false,
+                "type": "string"
+              },
+              "site_id": {
+                "required": false,
+                "type": "string"
+              },
+              "skew_protection_token": {
+                "required": false,
+                "type": "string"
+              },
+              "skipped": {
+                "required": false,
+                "type": "boolean"
+              },
+              "ssl_url": {
+                "required": false,
+                "type": "string"
+              },
+              "state": {
+                "required": false,
+                "type": "string"
+              },
+              "title": {
+                "required": false,
+                "type": "string"
+              },
+              "updated_at": {
+                "required": false,
+                "type": "string"
+              },
+              "url": {
+                "required": false,
+                "type": "string"
+              },
+              "user_id": {
+                "required": false,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "status": 200
+      },
+      "summary": "Perform operation listSiteDeploys",
+      "type": "method"
+    },
+    "netlify.deploy.get.1": {
+      "desc": "",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "deploy_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "3f768379f31fcd22078226bf82f96524639f6b73505df8a88a007350bb053664",
+      "output": {
+        "schema": {
+          "properties": {
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch": {
+              "required": false,
+              "type": "string"
+            },
+            "build_id": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_ref": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_url": {
+              "required": false,
+              "type": "string"
+            },
+            "context": {
+              "required": false,
+              "type": "string"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "draft": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error_message": {
+              "required": false,
+              "type": "string"
+            },
+            "framework": {
+              "required": false,
+              "type": "string"
+            },
+            "function_schedules": {
+              "items": {
+                "properties": {
+                  "cron": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "functions_region_overrides": {
+              "required": false,
+              "type": "[]ANY"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "locked": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "published_at": {
+              "required": false,
+              "type": "string"
+            },
+            "required": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_edge_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "review_id": {
+              "required": false,
+              "type": "FLOAT"
+            },
+            "review_url": {
+              "required": false,
+              "type": "string"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "site_id": {
+              "required": false,
+              "type": "string"
+            },
+            "skew_protection_token": {
+              "required": false,
+              "type": "string"
+            },
+            "skipped": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "title": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Perform operation getSiteDeploy",
+      "type": "method"
+    },
+    "netlify.deploy.get.2": {
+      "desc": "",
+      "inputs": [
+        {
+          "deploy_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "e90ef2d5052bc86fea9452f8f386110dfd5cb90298ae61ce2fa160c916533349",
+      "output": {
+        "schema": {
+          "properties": {
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch": {
+              "required": false,
+              "type": "string"
+            },
+            "build_id": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_ref": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_url": {
+              "required": false,
+              "type": "string"
+            },
+            "context": {
+              "required": false,
+              "type": "string"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "draft": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error_message": {
+              "required": false,
+              "type": "string"
+            },
+            "framework": {
+              "required": false,
+              "type": "string"
+            },
+            "function_schedules": {
+              "items": {
+                "properties": {
+                  "cron": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "functions_region_overrides": {
+              "required": false,
+              "type": "[]ANY"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "locked": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "published_at": {
+              "required": false,
+              "type": "string"
+            },
+            "required": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_edge_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "review_id": {
+              "required": false,
+              "type": "FLOAT"
+            },
+            "review_url": {
+              "required": false,
+              "type": "string"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "site_id": {
+              "required": false,
+              "type": "string"
+            },
+            "skew_protection_token": {
+              "required": false,
+              "type": "string"
+            },
+            "skipped": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "title": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Perform operation getDeploy",
+      "type": "method"
+    },
+    "netlify.deploy.restore.create": {
+      "desc": "",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "deploy_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "9f154ca3aaef84361f86e963201f930740aeb1a2870707cf1a8aeec4c5de45c1",
+      "output": {
+        "schema": {
+          "properties": {
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch": {
+              "required": false,
+              "type": "string"
+            },
+            "build_id": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_ref": {
+              "required": false,
+              "type": "string"
+            },
+            "commit_url": {
+              "required": false,
+              "type": "string"
+            },
+            "context": {
+              "required": false,
+              "type": "string"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "draft": {
+              "required": false,
+              "type": "boolean"
+            },
+            "error_message": {
+              "required": false,
+              "type": "string"
+            },
+            "framework": {
+              "required": false,
+              "type": "string"
+            },
+            "function_schedules": {
+              "items": {
+                "properties": {
+                  "cron": {
+                    "required": false,
+                    "type": "string"
+                  },
+                  "name": {
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "required": false,
+              "type": "array"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "functions_region_overrides": {
+              "required": false,
+              "type": "[]ANY"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "locked": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "published_at": {
+              "required": false,
+              "type": "string"
+            },
+            "required": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_edge_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "required_functions": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "review_id": {
+              "required": false,
+              "type": "FLOAT"
+            },
+            "review_url": {
+              "required": false,
+              "type": "string"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "site_id": {
+              "required": false,
+              "type": "string"
+            },
+            "skew_protection_token": {
+              "required": false,
+              "type": "string"
+            },
+            "skipped": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "title": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 201
+      },
+      "summary": "Perform operation restoreSiteDeploy",
+      "type": "method"
+    },
+    "netlify.site.get": {
+      "desc": "**Note:** Environment variable keys and values have moved from `build_settings.env` and `repo.env` to a new endpoint. Please use [getEnvVars](#tag/environmentVariables/operation/getEnvVars) to retrieve site environment variables.",
+      "inputs": [
+        {
+          "site_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "feature_flags": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Netlify.netlify@v1",
+      "method_hash": "4066cc1dcf904771fa97d34b49b6bae2f3e8a1c4f93f7bb722103d70645b7891",
+      "output": {
+        "schema": {
+          "properties": {
+            "account_id": {
+              "required": false,
+              "type": "string"
+            },
+            "account_name": {
+              "required": false,
+              "type": "string"
+            },
+            "account_slug": {
+              "required": false,
+              "type": "string"
+            },
+            "admin_url": {
+              "required": false,
+              "type": "string"
+            },
+            "branch_deploy_custom_domain": {
+              "required": false,
+              "type": "string"
+            },
+            "build_image": {
+              "required": false,
+              "type": "string"
+            },
+            "build_settings": {
+              "properties": {
+                "allowed_branches": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "cmd": {
+                  "required": false,
+                  "type": "string"
+                },
+                "deploy_key_id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "dir": {
+                  "required": false,
+                  "type": "string"
+                },
+                "env": {
+                  "required": false,
+                  "type": "map[STRING]STRING"
+                },
+                "functions_dir": {
+                  "required": false,
+                  "type": "string"
+                },
+                "id": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "installation_id": {
+                  "required": false,
+                  "type": "integer"
+                },
+                "private_logs": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "provider": {
+                  "required": false,
+                  "type": "string"
+                },
+                "public_repo": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "repo_branch": {
+                  "required": false,
+                  "type": "string"
+                },
+                "repo_path": {
+                  "required": false,
+                  "type": "string"
+                },
+                "repo_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "stop_builds": {
+                  "required": false,
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            },
+            "capabilities": {
+              "required": false,
+              "type": "map[STRING]ANY"
+            },
+            "created_at": {
+              "required": false,
+              "type": "string"
+            },
+            "custom_domain": {
+              "required": false,
+              "type": "string"
+            },
+            "default_hooks_data": {
+              "required": false,
+              "type": "object"
+            },
+            "deploy_hook": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_preview_custom_domain": {
+              "required": false,
+              "type": "string"
+            },
+            "deploy_url": {
+              "required": false,
+              "type": "string"
+            },
+            "domain_aliases": {
+              "required": false,
+              "type": "[]STRING"
+            },
+            "force_ssl": {
+              "required": false,
+              "type": "boolean"
+            },
+            "functions_region": {
+              "required": false,
+              "type": "string"
+            },
+            "git_provider": {
+              "required": false,
+              "type": "string"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "id_domain": {
+              "required": false,
+              "type": "string"
+            },
+            "managed_dns": {
+              "required": false,
+              "type": "boolean"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "notification_email": {
+              "required": false,
+              "type": "string"
+            },
+            "password": {
+              "required": false,
+              "type": "string"
+            },
+            "plan": {
+              "required": false,
+              "type": "string"
+            },
+            "prerender": {
+              "required": false,
+              "type": "string"
+            },
+            "prevent_non_git_prod_deploys": {
+              "required": false,
+              "type": "boolean"
+            },
+            "processing_settings": {
+              "required": false,
+              "type": "object"
+            },
+            "published_deploy": {
+              "properties": {
+                "admin_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "branch": {
+                  "required": false,
+                  "type": "string"
+                },
+                "build_id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "commit_ref": {
+                  "required": false,
+                  "type": "string"
+                },
+                "commit_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "context": {
+                  "required": false,
+                  "type": "string"
+                },
+                "created_at": {
+                  "required": false,
+                  "type": "string"
+                },
+                "deploy_ssl_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "deploy_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "draft": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "error_message": {
+                  "required": false,
+                  "type": "string"
+                },
+                "framework": {
+                  "required": false,
+                  "type": "string"
+                },
+                "function_schedules": {
+                  "items": {
+                    "properties": {
+                      "cron": {
+                        "required": false,
+                        "type": "string"
+                      },
+                      "name": {
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "required": false,
+                  "type": "array"
+                },
+                "functions_region": {
+                  "required": false,
+                  "type": "string"
+                },
+                "functions_region_overrides": {
+                  "required": false,
+                  "type": "[]ANY"
+                },
+                "id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "locked": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "name": {
+                  "required": false,
+                  "type": "string"
+                },
+                "published_at": {
+                  "required": false,
+                  "type": "string"
+                },
+                "required": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "required_edge_functions": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "required_functions": {
+                  "required": false,
+                  "type": "[]STRING"
+                },
+                "review_id": {
+                  "required": false,
+                  "type": "FLOAT"
+                },
+                "review_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "screenshot_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "site_id": {
+                  "required": false,
+                  "type": "string"
+                },
+                "skew_protection_token": {
+                  "required": false,
+                  "type": "string"
+                },
+                "skipped": {
+                  "required": false,
+                  "type": "boolean"
+                },
+                "ssl_url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "state": {
+                  "required": false,
+                  "type": "string"
+                },
+                "title": {
+                  "required": false,
+                  "type": "string"
+                },
+                "updated_at": {
+                  "required": false,
+                  "type": "string"
+                },
+                "url": {
+                  "required": false,
+                  "type": "string"
+                },
+                "user_id": {
+                  "required": false,
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "screenshot_url": {
+              "required": false,
+              "type": "string"
+            },
+            "session_id": {
+              "required": false,
+              "type": "string"
+            },
+            "ssl": {
+              "required": false,
+              "type": "boolean"
+            },
+            "ssl_url": {
+              "required": false,
+              "type": "string"
+            },
+            "state": {
+              "required": false,
+              "type": "string"
+            },
+            "updated_at": {
+              "required": false,
+              "type": "string"
+            },
+            "url": {
+              "required": false,
+              "type": "string"
+            },
+            "user_id": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "**Note:** Environment variable keys and values have moved from `build_settings.env` and `repo.env` to a new endpoint",
+      "type": "method"
+    },
+    "notion.comment.create": {
+      "desc": "Creates a comment in a page or existing discussion thread.",
+      "inputs": [
+        {
+          "body": {
+            "LOCATION": "body",
+            "REQUIRED": false,
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "parent": {
+                  "required": true,
+                  "type": "object"
+                },
+                "rich_text": {
+                  "required": true,
+                  "type": "[]ANY"
+                }
+              },
+              "required": [
+                "parent",
+                "rich_text"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "3f29238deecb16d5c8e80eb295717b6fbc59c62f385bb2b4d71338fa1c74f0ca",
+      "output": {
+        "schema": {
+          "type": "any"
+        },
+        "status": 200
+      },
+      "summary": "Create comment",
+      "type": "method"
+    },
+    "notion.comment.list": {
+      "desc": "Retrieves a list of un-resolved [Comment objects](ref:comment-object) from a page or block.",
+      "inputs": [
+        {
+          "block_id": {
+            "LOCATION": "query",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "start_cursor": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "page_size": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "f77cc7e38cb893295277683b84df114ec9a62c29d2d67168dfbe0e0085ddbf4e",
+      "output": {
+        "schema": {
+          "type": "any"
+        },
+        "status": 200
+      },
+      "summary": "Retrieve comments",
+      "type": "method"
+    },
+    "notion.markdown.get": {
+      "desc": "Retrieve the full content of a Notion page rendered as enhanced Markdown. Designed for agentic and developer tools that work natively with Markdown instead of the block JSON returned by Retrieve block children.",
+      "inputs": [
+        {
+          "page_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "include_transcript": {
+            "DEFAULT": false,
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "BOOL"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2026-03-11",
+            "LOCATION": "header",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "786128092dadf86cb00d466a56b1cf57eab2fa06245413504f540cbbd2f52125",
+      "output": {
+        "schema": {
+          "properties": {
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "markdown": {
+              "required": false,
+              "type": "string"
+            },
+            "object": {
+              "required": false,
+              "type": "string"
+            },
+            "truncated": {
+              "required": false,
+              "type": "boolean"
+            },
+            "unknown_block_ids": {
+              "required": false,
+              "type": "[]STRING"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Retrieve a page as Markdown",
+      "type": "method"
+    },
+    "notion.markdown.update": {
+      "desc": "Update the content of a Notion page using enhanced Markdown. Prefer `replace_content` to overwrite the whole page or `update_content` for targeted find-and-replace edits.",
+      "inputs": [
+        {
+          "page_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2026-03-11",
+            "LOCATION": "header",
+            "REQUIRED": true,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "body": {
+            "LOCATION": "body",
+            "TYPE": "OBJECT",
+            "schema": {
+              "properties": {
+                "insert_content": {
+                  "required": false,
+                  "type": "object"
+                },
+                "replace_content": {
+                  "required": false,
+                  "type": "object"
+                },
+                "replace_content_range": {
+                  "required": false,
+                  "type": "object"
+                },
+                "type": {
+                  "required": true,
+                  "type": "string"
+                },
+                "update_content": {
+                  "required": false,
+                  "type": "object"
+                }
+              },
+              "required": [
+                "type"
+              ]
+            }
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "068c02695fcd94a10c9850b6b892c1777749e252f8bcd8a47c95882466719144",
+      "output": {
+        "schema": {
+          "properties": {
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "markdown": {
+              "required": false,
+              "type": "string"
+            },
+            "object": {
+              "required": false,
+              "type": "string"
+            },
+            "truncated": {
+              "required": false,
+              "type": "boolean"
+            },
+            "unknown_block_ids": {
+              "required": false,
+              "type": "[]STRING"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Update a page's content as Markdown",
+      "type": "method"
+    },
+    "notion.me.list": {
+      "desc": "",
+      "inputs": [
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "8de0a355a540f86752836165fa80c7b3fdaed9331b3d499370283d49d5995400",
+      "output": {
+        "schema": {
+          "properties": {
+            "avatar_url": {
+              "required": false,
+              "type": "any"
+            },
+            "bot": {
+              "required": false,
+              "type": "object"
+            },
+            "id": {
+              "required": false,
+              "type": "string"
+            },
+            "name": {
+              "required": false,
+              "type": "string"
+            },
+            "object": {
+              "required": false,
+              "type": "string"
+            },
+            "type": {
+              "required": false,
+              "type": "string"
+            }
+          }
+        },
+        "status": 200
+      },
+      "summary": "Retrieve your token's bot user",
+      "type": "method"
+    },
+    "notion.property.get": {
+      "desc": "",
+      "inputs": [
+        {
+          "page_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "property_id": {
+            "LOCATION": "path",
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "page_size": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "INT"
+          }
+        },
+        {
+          "start_cursor": {
+            "LOCATION": "query",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        },
+        {
+          "Notion-Version": {
+            "DEFAULT": "2025-09-03",
+            "LOCATION": "header",
+            "REQUIRED": false,
+            "TYPE": "STRING"
+          }
+        }
+      ],
+      "integration": "Notion.notion@2.0.0",
+      "method_hash": "0657eb525cb97420b52cb7786efe0a1a00a54bf67d3bfcc026c07848693ae6b2",
+      "output": {
+        "schema": {
+          "type": "any"
+        },
+        "status": 200
+      },
+      "summary": "Retrieve a page property item",
+      "type": "method"
+    }
+  },
+  "version": "2.20.4"
+}

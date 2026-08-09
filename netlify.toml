@@ -1,0 +1,9 @@
+# Netlify builds this repository, so Release Sentinel guards the very repo it
+# lives in. The build runs scripts/build-site.mjs, which fails on a broken asset
+# reference - that is the failure the agent recovers from during the demo.
+[build]
+  command = "npm run build:site"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"

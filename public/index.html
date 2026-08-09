@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Release Sentinel</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="pulse" id="pulse" aria-hidden="true"></span>
+        <div>
+          <h1>Release Sentinel</h1>
+          <p class="tagline">Autonomous release gating, deployment and rollback — every action executed through Swytchcode</p>
+        </div>
+      </div>
+      <button id="runButton" class="primary">Run Sentinel</button>
+    </header>
+
+    <section class="context" id="context" aria-label="Configuration"></section>
+    <section class="banner hidden" id="readiness" aria-label="Setup status"></section>
+
+    <main>
+      <div class="column">
+        <section class="card">
+          <h2>Agent loop</h2>
+          <ol class="timeline" id="timeline"></ol>
+        </section>
+
+        <section class="card">
+          <h2>Risk verdict</h2>
+          <div id="verdict" class="verdict empty">No run yet. Press <strong>Run Sentinel</strong> to evaluate the current head of the branch.</div>
+        </section>
+
+        <section class="card">
+          <h2>Release candidate</h2>
+          <div id="commits" class="commits empty">No commits ingested yet.</div>
+        </section>
+      </div>
+
+      <div class="column">
+        <section class="card">
+          <h2>Artifacts</h2>
+          <div id="artifacts" class="artifacts empty">Jira issues, Netlify deploys and the Notion report will appear here as the agent creates them.</div>
+        </section>
+
+        <section class="card">
+          <h2>
+            Swytchcode calls
+            <span class="counter" id="callCount">0</span>
+          </h2>
+          <div class="calls-wrap">
+            <table class="calls">
+              <thead>
+                <tr><th>Integration</th><th>Method</th><th>ms</th><th></th></tr>
+              </thead>
+              <tbody id="calls"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="callsEmpty">Each row is one <code>swytchcode exec</code> against a live API.</p>
+        </section>
+
+        <section class="card">
+          <h2>Activity</h2>
+          <div id="log" class="log" role="log" aria-live="polite"></div>
+        </section>
+      </div>
+    </main>
+
+    <section class="card history-card">
+      <h2>Run history</h2>
+      <div id="history" class="history empty">No previous runs in this session.</div>
+    </section>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
