@@ -1,0 +1,62 @@
+# Render Blueprint — creates a public Web Service for the agent dashboard.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# After connecting the GitHub repo in Render:
+# 1. Add every env var listed below in the dashboard (especially SWYTCHCODE_TOKEN).
+# 2. Deploy. Public URL will look like https://release-sentinel-xxxx.onrender.com
+
+services:
+  - type: web
+    name: release-sentinel
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Set these as secrets in the Render dashboard (do not commit values):
+      - key: SWYTCHCODE_TOKEN
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: openai/gpt-oss-20b
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_OWNER
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
+      - key: GITHUB_BRANCH
+        value: main
+      - key: NETLIFY_TOKEN
+        sync: false
+      - key: NETLIFY_SITE_ID
+        sync: false
+      - key: JIRA_BASE_URL
+        sync: false
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
+      - key: JIRA_PROJECT_KEY
+        sync: false
+      - key: JIRA_ISSUE_TYPE
+        value: Task
+      - key: NOTION_TOKEN
+        sync: false
+      - key: NOTION_REPORT_PAGE_ID
+        sync: false
+      - key: RISK_THRESHOLD
+        value: "65"
+      - key: LOOKBACK_MINUTES
+        value: "1440"
+      - key: MAX_COMMITS
+        value: "1"
+      - key: AGENT_DRY_RUN
+        value: "false"
+      - key: HEALTH_CHECK_MARKER
+        value: Guarded by Release Sentinel
