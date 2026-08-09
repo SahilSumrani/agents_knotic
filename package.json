@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "start": "node --require tsx/dist/preflight.cjs --import tsx/dist/loader.mjs src/server.ts",
     "run:once": "tsx src/cli.ts",
     "preflight": "tsx src/preflight.ts",
     "build:site": "node scripts/build-site.mjs",

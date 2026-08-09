@@ -26,5 +26,6 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-# tsx is a dependency; start the Express dashboard + agent.
-CMD ["npx", "tsx", "src/server.ts"]
+# Boot Node with the same absolute tsx loader flags the worker thread uses.
+# `npx tsx` works locally but worker_threads on Render need resolvable paths.
+CMD ["node", "--require", "tsx/dist/preflight.cjs", "--import", "tsx/dist/loader.mjs", "src/server.ts"]

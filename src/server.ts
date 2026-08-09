@@ -1,4 +1,5 @@
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 import { Worker } from "node:worker_threads";
 import express from "express";
@@ -14,6 +15,7 @@ import type { WorkerEvent } from "./types.ts";
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const config = loadConfig();
 const store = new RunStore();
 const app = express();
@@ -23,19 +25,17 @@ app.use(express.static(join(here, "..", "public")));
 
 let currentWorker: Worker | undefined;
 
-/** Loader flags the worker thread needs to execute TypeScript sources. */
+/**
+ * Absolute tsx loader flags for worker_threads.
+ *
+ * A bare `--import tsx` fails on Render/Docker with ERR_UNKNOWN_FILE_EXTENSION.
+ * Resolving the preflight + loader files to absolute paths matches how `tsx`
+ * itself boots Node, and does not depend on module resolution inside the worker.
+ */
 function workerExecArgv(): string[] {
-  const inherited: string[] = [];
-  for (let i = 0; i < process.execArgv.length; i += 1) {
-    const arg = process.execArgv[i]!;
-    if (arg === "--eval" || arg === "-e") {
-      i += 1; // skip the eval payload too
-      continue;
-    }
-    inherited.push(arg);
-  }
-  if (inherited.some((arg) => arg.includes("tsx"))) return inherited;
-  return ["--import", "tsx"];
+  const preflight = require.resolve("tsx/dist/preflight.cjs");
+  const loader = pathToFileURL(require.resolve("tsx/dist/loader.mjs")).href;
+  return ["--require", preflight, "--import", loader];
 }
 
 function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: string } {
@@ -43,13 +43,12 @@ function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: stri
   // could roll back a deploy another run is still verifying.
   if (currentWorker) return { started: false, reason: "a run is already in progress" };
 
+  const execArgv = workerExecArgv();
+  console.log(`[worker] spawning with execArgv=${JSON.stringify(execArgv)}`);
+
   const worker = new Worker(join(here, "worker.ts"), {
     workerData: { trigger },
-    // tsx boots the main thread with --require preflight + an absolute
-    // --import of loader.mjs. A bare `--import tsx` is not enough for worker
-    // threads (Render hit ERR_UNKNOWN_FILE_EXTENSION on worker.ts). Inherit
-    // the parent flags, stripping any --eval used by one-off CLI invocations.
-    execArgv: workerExecArgv(),
+    execArgv,
   });
   currentWorker = worker;
 
