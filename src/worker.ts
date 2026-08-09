@@ -1,30 +1,33 @@
-import { parentPort, workerData } from "node:worker_threads";
 import { loadConfig } from "./config.ts";
 import { runPipeline } from "./pipeline.ts";
 import type { RunState, WorkerEvent } from "./types.ts";
 
 /**
- * Runs one pipeline pass in a worker thread.
+ * Runs one pipeline pass in a child process.
  *
  * This exists because `@swytchcode/runtime`'s `exec()` is built on `spawnSync`,
- * which blocks the event loop for the whole duration of the CLI subprocess and
- * its HTTP call. Running the pipeline on the main thread would freeze the
- * Express server and stall the SSE stream for tens of seconds per run, so the
- * dashboard would replay the whole timeline at the end instead of live. Isolating
- * it here keeps the main thread free to serve the UI while the agent works.
+ * which blocks the event loop. Isolating the pipeline here keeps the Express
+ * server free to serve the UI and SSE stream while the agent works.
+ *
+ * Implemented as a child process (not a worker_thread) because Node on Render
+ * does not reliably apply the tsx loader inside worker_threads, which produced
+ * ERR_UNKNOWN_FILE_EXTENSION for worker.ts. A child process booted the same
+ * way as the server (`node --import tsx …`) loads TypeScript correctly.
  */
 
-if (!parentPort) {
-  throw new Error("worker.ts must be started as a worker thread");
-}
-
-const port = parentPort;
-
 function post(event: WorkerEvent): void {
-  port.postMessage(event);
+  if (typeof process.send === "function") {
+    process.send(event);
+    return;
+  }
+  // Fallback when someone runs the file directly in a terminal.
+  console.log(JSON.stringify(event));
 }
 
-const trigger = (workerData?.trigger ?? "manual") as RunState["trigger"];
+const triggerArg = process.argv[2];
+const trigger = (
+  triggerArg === "poll" || triggerArg === "manual" ? triggerArg : "manual"
+) as RunState["trigger"];
 
 try {
   const config = loadConfig();
@@ -33,6 +36,7 @@ try {
     onLog: (entry) => post({ type: "log", ...entry }),
   });
   post({ type: "run:finished", run: structuredClone(run) });
+  process.exitCode = 0;
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   post({
@@ -41,5 +45,5 @@ try {
     level: "error",
     message: `worker crashed: ${message}`,
   });
-  throw error;
+  process.exitCode = 1;
 }

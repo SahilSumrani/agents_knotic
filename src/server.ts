@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
-import { Worker } from "node:worker_threads";
+import { spawn, type ChildProcess } from "node:child_process";
 import express from "express";
 import { checkReadiness, loadConfig } from "./config.ts";
 import { RunStore } from "./store.ts";
@@ -10,8 +10,8 @@ import type { WorkerEvent } from "./types.ts";
 /**
  * HTTP surface and live dashboard.
  *
- * The server never runs the pipeline itself; it spawns the worker (see worker.ts
- * for why) and fans worker messages out to browsers over SSE.
+ * The server never runs the pipeline itself; it spawns a child process (see
+ * worker.ts for why) and fans messages out to browsers over SSE.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -23,19 +23,18 @@ const app = express();
 app.use(express.json());
 app.use(express.static(join(here, "..", "public")));
 
-let currentWorker: Worker | undefined;
+let currentWorker: ChildProcess | undefined;
 
-/**
- * Absolute tsx loader flags for worker_threads.
- *
- * Use the package export paths (`tsx/preflight`, `tsx`), not `tsx/dist/...`,
- * which Node rejects with ERR_PACKAGE_PATH_NOT_EXPORTED. Resolving to absolute
- * filesystem paths matches how the `tsx` CLI itself boots Node.
- */
-function workerExecArgv(): string[] {
-  const preflight = require.resolve("tsx/preflight");
-  const loader = pathToFileURL(require.resolve("tsx")).href;
-  return ["--require", preflight, "--import", loader];
+/** Same Node+tsx boot flags the main process uses — reliable on Render. */
+function tsxNodeArgs(script: string, scriptArg: string): string[] {
+  return [
+    "--require",
+    require.resolve("tsx/preflight"),
+    "--import",
+    pathToFileURL(require.resolve("tsx")).href,
+    script,
+    scriptArg,
+  ];
 }
 
 function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: string } {
@@ -43,12 +42,12 @@ function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: stri
   // could roll back a deploy another run is still verifying.
   if (currentWorker) return { started: false, reason: "a run is already in progress" };
 
-  const execArgv = workerExecArgv();
-  console.log(`[worker] spawning with execArgv=${JSON.stringify(execArgv)}`);
+  const args = tsxNodeArgs(join(here, "worker.ts"), trigger);
+  console.log(`[worker] spawning node ${args.join(" ")}`);
 
-  const worker = new Worker(join(here, "worker.ts"), {
-    workerData: { trigger },
-    execArgv,
+  const worker = spawn(process.execPath, args, {
+    stdio: ["ignore", "inherit", "inherit", "ipc"],
+    env: process.env,
   });
   currentWorker = worker;
 
@@ -68,8 +67,6 @@ function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: stri
   };
 
   worker.on("error", (error) => {
-    // Also to the console: a worker that dies before its first message leaves
-    // nothing in the run history, so the terminal is the only place to see why.
     console.error(`[worker] ${error.stack ?? error.message}`);
     store.broadcast("log", {
       type: "log",
@@ -80,8 +77,10 @@ function startRun(trigger: "manual" | "poll"): { started: boolean; reason?: stri
     release();
   });
 
-  worker.on("exit", (code) => {
-    if (code !== 0) console.error(`[worker] exited with code ${code}`);
+  worker.on("exit", (code, signal) => {
+    if (code && code !== 0) {
+      console.error(`[worker] exited with code ${code}${signal ? ` signal=${signal}` : ""}`);
+    }
     release();
     store.broadcast("idle", { active: false });
   });

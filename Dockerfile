@@ -11,7 +11,7 @@ RUN apt-get update \
 
 COPY package.json package-lock.json ./
 # Bump this when npm layer cache must be invalidated on Render.
-ARG NPM_CACHE_BUST=2026-08-10-c29
+ARG NPM_CACHE_BUST=2026-08-10-childproc
 RUN echo "npm-cache-bust=$NPM_CACHE_BUST" \
   && npm ci --omit=dev \
   && npm install swytchcode@^2 --no-save \
