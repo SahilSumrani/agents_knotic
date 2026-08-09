@@ -39,7 +39,7 @@
   "Jira.jira": {
     "version": "v1",
     "sandbox_endpoint": "http://localhost",
-    "production_endpoint": "https://your-domain.atlassian.net",
+    "production_endpoint": "https://educationalguru083.atlassian.net",
     "methods": 616,
     "init_details": {
       "VERSION": "2.0.2"
