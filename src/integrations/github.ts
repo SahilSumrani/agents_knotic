@@ -149,11 +149,17 @@ export class GitHubIntegration {
     });
 
     if (statusResult.ok) {
-      const combined = unwrap<{ state?: string }>(
+      const combined = unwrap<{ state?: string; total_count?: number }>(
         "github combined status",
         statusResult.value,
       );
-      checks.combinedState = combined?.state ?? "unknown";
+      // GitHub reports `pending` for a commit that has no statuses at all, which
+      // is indistinguishable from "CI is still running" unless we look at the
+      // count. Reporting `none` keeps a repo without CI from looking like every
+      // release is mid-flight, which would gate every single change forever.
+      const hasStatuses = (combined?.total_count ?? 0) > 0;
+      checks.combinedState =
+        !hasStatuses && checks.total === 0 ? "none" : combined?.state ?? "unknown";
     }
 
     return checks;

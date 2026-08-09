@@ -27,14 +27,16 @@ const APPEND_PAYLOADS: { label: string; build: PayloadBuilder }[] = [
     label: "insert_content.content",
     build: (markdown) => ({
       type: "insert_content",
-      insert_content: { content: markdown, position: "end" },
+      insert_content: { content: markdown },
     }),
   },
   {
-    label: "insert_content.content(no position)",
+    // `position` is an object, not a string: passing "end" is rejected with
+    // `body.insert_content.position should be an object or undefined`.
+    label: "insert_content.content+position",
     build: (markdown) => ({
       type: "insert_content",
-      insert_content: { content: markdown },
+      insert_content: { content: markdown, position: { type: "end" } },
     }),
   },
   {
@@ -71,9 +73,14 @@ export class NotionIntegration {
   }
 
   /**
-   * Appends a Markdown report to the configured page. Falls back to posting the
-   * report as a page comment, which uses a fully-specified schema and therefore
-   * always works — a slightly worse-looking report beats no report during a demo.
+   * Appends a Markdown report to the configured page.
+   *
+   * There is deliberately no fallback. `notion.comment.create` looks like one,
+   * but the bundle does not declare a `Notion-Version` input for it and Notion
+   * rejects the request without that header, so the fallback could only ever
+   * fail — and it failed *late*, replacing the real reason (usually a page that
+   * has not been shared with the integration) with a misleading header error.
+   * Reporting the first failure verbatim is far more useful.
    */
   async appendReport(markdown: string): Promise<{ ok: boolean; via: string; detail?: string }> {
     if (!this.configured) {
@@ -83,20 +90,20 @@ export class NotionIntegration {
     if (this.workingPayload) {
       const result = await this.tryAppend(this.workingPayload, markdown);
       if (result.ok) return { ok: true, via: "markdown" };
-    } else {
-      for (const candidate of APPEND_PAYLOADS) {
-        const result = await this.tryAppend(candidate.build, markdown);
-        if (result.ok) {
-          this.workingPayload = candidate.build;
-          return { ok: true, via: `markdown (${candidate.label})` };
-        }
-      }
+      return { ok: false, via: "none", detail: result.detail };
     }
 
-    const comment = await this.addComment(markdown);
-    return comment.ok
-      ? { ok: true, via: "comment" }
-      : { ok: false, via: "none", detail: comment.detail };
+    let firstFailure: string | undefined;
+    for (const candidate of APPEND_PAYLOADS) {
+      const result = await this.tryAppend(candidate.build, markdown);
+      if (result.ok) {
+        this.workingPayload = candidate.build;
+        return { ok: true, via: `markdown (${candidate.label})` };
+      }
+      firstFailure ??= result.detail;
+    }
+
+    return { ok: false, via: "none", detail: firstFailure };
   }
 
   private async tryAppend(
@@ -112,29 +119,6 @@ export class NotionIntegration {
 
     try {
       unwrap("notion append markdown", result.value);
-      return { ok: true };
-    } catch (error) {
-      return { ok: false, detail: error instanceof Error ? error.message : String(error) };
-    }
-  }
-
-  /** Notion caps a single rich-text run at 2000 characters. */
-  private async addComment(text: string): Promise<{ ok: boolean; detail?: string }> {
-    const result = await this.swytch.tryCall(
-      "notion.comment.create",
-      {
-        "Notion-Version": this.config.notion.version,
-        Authorization: this.config.notion.auth,
-        body: {
-          parent: { page_id: this.config.notion.reportPageId },
-          rich_text: [{ type: "text", text: { content: text.slice(0, 1900) } }],
-        },
-      },
-      { maxAttempts: 1 },
-    );
-    if (!result.ok) return { ok: false, detail: result.error.message };
-    try {
-      unwrap("notion create comment", result.value);
       return { ok: true };
     } catch (error) {
       return { ok: false, detail: error instanceof Error ? error.message : String(error) };

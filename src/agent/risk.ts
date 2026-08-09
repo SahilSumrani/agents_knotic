@@ -17,7 +17,8 @@ You are given structured evidence about commits that are candidates for deployme
 Score the risk of deploying these changes right now, from 0 (trivially safe) to 100 (do not ship).
 
 Weigh the evidence:
-- Failing or pending CI checks are the strongest negative signal.
+- Failing CI checks are the strongest negative signal. Checks that are genuinely still running (pendingChecks above zero) are the second strongest.
+- combinedCheckState "none" means the repository has no CI configured at all, so no commit here will ever have checks. Treat that as a constant property of the project, not as evidence about this particular change, and do not gate a release on it. It is not the same as checks being in progress.
 - Changes to dependency manifests, build config, CI workflows, infrastructure or database migrations carry more risk than isolated application code.
 - Large diffs and many touched files raise risk.
 - Commit messages signalling urgency, work-in-progress or reverts raise risk.
