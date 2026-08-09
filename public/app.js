@@ -13,11 +13,18 @@ const STEP_LABELS = {
   report: "Write the report",
 };
 
+const STEP_ORDER = Object.keys(STEP_LABELS);
+
 const els = {
   pulse: document.getElementById("pulse"),
   runButton: document.getElementById("runButton"),
+  conn: document.getElementById("conn"),
   context: document.getElementById("context"),
   readiness: document.getElementById("readiness"),
+  livebar: document.getElementById("livebar"),
+  liveFill: document.getElementById("liveFill"),
+  liveStep: document.getElementById("liveStep"),
+  liveDetail: document.getElementById("liveDetail"),
   timeline: document.getElementById("timeline"),
   verdict: document.getElementById("verdict"),
   commits: document.getElementById("commits"),
@@ -27,11 +34,15 @@ const els = {
   callsEmpty: document.getElementById("callsEmpty"),
   log: document.getElementById("log"),
   history: document.getElementById("history"),
+  toast: document.getElementById("toast"),
 };
 
 let currentRun = null;
+let selectedRunId = null;
 let runs = [];
 let active = false;
+let knownCallCount = 0;
+let toastTimer;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(
@@ -56,11 +67,22 @@ function duration(step) {
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
 }
 
+function showToast(title, detail, tone = "ok") {
+  els.toast.className = `toast ${tone}`;
+  els.toast.innerHTML = `<strong>${escapeHtml(title)}</strong>${escapeHtml(detail)}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.toast.classList.add("hidden"), 5200);
+}
+
 function setActive(value) {
   active = value;
   els.pulse.classList.toggle("active", value);
   els.runButton.disabled = value;
   els.runButton.textContent = value ? "Sentinel running…" : "Run Sentinel";
+  els.livebar.classList.toggle("hidden", !value);
+  if (!value) {
+    els.liveFill.style.width = "100%";
+  }
 }
 
 function renderContext(state) {
@@ -97,12 +119,30 @@ function renderReadiness(problems) {
       .join("")}</ul>`;
 }
 
+function renderLivebar(run) {
+  if (!active || !run) return;
+  const steps = run.steps ?? [];
+  const running = steps.find((step) => step.status === "running");
+  const done = steps.filter((step) =>
+    ["ok", "error", "skipped"].includes(step.status),
+  ).length;
+  const pct = Math.max(8, Math.round((done / STEP_ORDER.length) * 100));
+  els.liveFill.style.width = `${pct}%`;
+  els.liveStep.textContent = running
+    ? STEP_LABELS[running.name] ?? running.name
+    : done === STEP_ORDER.length
+      ? "Finishing…"
+      : "Working…";
+  els.liveDetail.textContent = running?.detail || running?.error || `${done}/${STEP_ORDER.length} steps settled`;
+}
+
 function renderTimeline(run) {
-  const steps = run?.steps ?? Object.keys(STEP_LABELS).map((name) => ({ name, status: "pending" }));
+  const steps =
+    run?.steps ?? Object.keys(STEP_LABELS).map((name) => ({ name, status: "pending" }));
   els.timeline.innerHTML = steps
     .map(
       (step) => `
-      <li>
+      <li class="${step.status === "running" ? "is-running" : ""}">
         <span class="dot ${escapeHtml(step.status)}"></span>
         <span>
           <span class="step-name">${escapeHtml(STEP_LABELS[step.name] ?? step.name)}</span>
@@ -112,17 +152,18 @@ function renderTimeline(run) {
       </li>`,
     )
     .join("");
+  renderLivebar(run);
 }
 
 function renderVerdict(run) {
   const verdict = run?.verdict;
   if (!verdict) {
     els.verdict.className = "verdict empty";
-    els.verdict.innerHTML = "No verdict yet for this run.";
+    els.verdict.innerHTML =
+      'No verdict yet for this run. Press <strong>Run Sentinel</strong> (or hit <kbd>R</kbd>).';
     return;
   }
 
-  // Colour tracks severity so the score reads correctly at a glance from across a room.
   const tone =
     verdict.riskScore >= 65 ? "var(--bad)" : verdict.riskScore >= 35 ? "var(--warn)" : "var(--ok)";
 
@@ -221,13 +262,15 @@ function renderArtifacts(run) {
 
 function renderCalls(run) {
   const calls = run?.swytchcodeCalls ?? [];
+  const previous = knownCallCount;
+  knownCallCount = calls.length;
   els.callCount.textContent = calls.length;
   els.callsEmpty.style.display = calls.length === 0 ? "block" : "none";
 
   els.calls.innerHTML = calls
     .map(
-      (call) => `
-      <tr>
+      (call, index) => `
+      <tr class="${index >= previous ? "new-call" : ""}">
         <td><span class="tag ${escapeHtml(call.integration)}">${escapeHtml(call.integration)}</span></td>
         <td>${escapeHtml(call.canonicalId)}${call.attempts > 1 ? ` <span class="label">×${call.attempts}</span>` : ""}</td>
         <td class="num">${call.durationMs}</td>
@@ -235,6 +278,11 @@ function renderCalls(run) {
       </tr>`,
     )
     .join("");
+
+  if (calls.length > previous) {
+    const wrap = els.calls.closest(".calls-wrap");
+    if (wrap) wrap.scrollTop = wrap.scrollHeight;
+  }
 }
 
 function renderLog(run) {
@@ -267,32 +315,62 @@ function renderHistory() {
       if (run.jiraIssue?.key) bits.push(run.jiraIssue.key);
       if (run.incidentIssue?.key) bits.push(run.incidentIssue.key);
       bits.push(`${run.swytchcodeCalls.length} calls`);
+      const selected = run.id === selectedRunId ? "selected" : "";
       return `
-        <div class="history-row">
+        <button type="button" class="history-row ${selected}" data-run-id="${escapeHtml(run.id)}">
           <span class="id">${escapeHtml(run.id)}</span>
           <span class="outcome ${escapeHtml(run.outcome ?? "failed")}">${escapeHtml((run.outcome ?? "failed").replace(/_/g, " "))}</span>
           <span class="label">${escapeHtml(clockTime(run.startedAt))}</span>
           <span class="step-detail">${escapeHtml(bits.join(" · "))}</span>
-        </div>`;
+        </button>`;
     })
     .join("");
 }
 
 function renderRun(run) {
   currentRun = run;
+  selectedRunId = run?.id ?? selectedRunId;
   renderTimeline(run);
   renderVerdict(run);
   renderCommits(run);
   renderArtifacts(run);
   renderCalls(run);
   renderLog(run);
+  renderHistory();
 }
 
 function upsertRun(run) {
   const index = runs.findIndex((candidate) => candidate.id === run.id);
   if (index >= 0) runs[index] = run;
   else runs.unshift(run);
-  renderHistory();
+}
+
+function toastForOutcome(run) {
+  const outcome = run.outcome ?? "failed";
+  const map = {
+    shipped: ["Shipped", "Deploy published and health check passed.", "ok"],
+    held: ["Held", "Risk gate blocked the deploy and filed a review ticket.", "warn"],
+    rolled_back: ["Rolled back", "Bad deploy caught — production restored.", "bad"],
+    no_changes: ["No changes", "Nothing new in the lookback window.", "ok"],
+    failed: ["Run failed", run.error ?? "Something went wrong during the loop.", "bad"],
+  };
+  const [title, detail, tone] = map[outcome] ?? map.failed;
+  showToast(title, detail, tone);
+}
+
+async function startRun() {
+  if (active) return;
+  setActive(true);
+  knownCallCount = 0;
+  els.liveFill.style.width = "8%";
+  els.liveStep.textContent = "Starting…";
+  els.liveDetail.textContent = "Spawning pipeline worker";
+  const response = await fetch("/api/runs", { method: "POST" });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    setActive(false);
+    showToast("Could not start", body.error ?? "request failed", "bad");
+  }
 }
 
 async function loadState() {
@@ -302,28 +380,50 @@ async function loadState() {
   renderReadiness(state.readiness);
   runs = state.runs ?? [];
   setActive(Boolean(state.active));
-  renderHistory();
   if (runs[0]) renderRun(runs[0]);
-  else renderTimeline(null);
+  else {
+    renderTimeline(null);
+    renderHistory();
+  }
 }
 
-els.runButton.addEventListener("click", async () => {
-  setActive(true);
-  const response = await fetch("/api/runs", { method: "POST" });
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    setActive(false);
-    alert(body.error ?? "could not start a run");
-  }
+els.runButton.addEventListener("click", () => {
+  startRun();
+});
+
+els.history.addEventListener("click", (event) => {
+  const row = event.target.closest("[data-run-id]");
+  if (!row) return;
+  const run = runs.find((candidate) => candidate.id === row.dataset.runId);
+  if (!run) return;
+  knownCallCount = run.swytchcodeCalls?.length ?? 0;
+  renderRun(run);
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key !== "r" && event.key !== "R") return;
+  if (event.target.matches("input, textarea, select")) return;
+  event.preventDefault();
+  startRun();
 });
 
 const events = new EventSource("/api/events");
+
+events.onopen = () => {
+  els.conn.textContent = "live";
+  els.conn.className = "conn live";
+};
+
+events.onerror = () => {
+  els.conn.textContent = "reconnecting…";
+  els.conn.className = "conn down";
+};
 
 events.addEventListener("run", (event) => {
   const run = JSON.parse(event.data);
   setActive(true);
   upsertRun(run);
-  renderRun(run);
+  if (!selectedRunId || selectedRunId === run.id || active) renderRun(run);
 });
 
 events.addEventListener("finished", (event) => {
@@ -331,12 +431,11 @@ events.addEventListener("finished", (event) => {
   upsertRun(run);
   renderRun(run);
   setActive(false);
+  toastForOutcome(run);
 });
 
 events.addEventListener("idle", () => setActive(false));
 
-// Logs also arrive on their own channel so activity keeps flowing even between
-// run-state snapshots.
 events.addEventListener("log", (event) => {
   const entry = JSON.parse(event.data);
   if (!currentRun) return;

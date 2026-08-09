@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Release Sentinel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -12,14 +18,29 @@
         <span class="pulse" id="pulse" aria-hidden="true"></span>
         <div>
           <h1>Release Sentinel</h1>
-          <p class="tagline">Autonomous release gating, deployment and rollback — every action executed through Swytchcode</p>
+          <p class="tagline">
+            Autonomous release gating, deployment and rollback — every action executed through
+            Swytchcode
+          </p>
         </div>
       </div>
-      <button id="runButton" class="primary">Run Sentinel</button>
+      <div class="top-actions">
+        <span class="conn" id="conn" title="Live event stream">connecting…</span>
+        <button id="runButton" class="primary" title="Shortcut: R">Run Sentinel</button>
+      </div>
     </header>
 
     <section class="context" id="context" aria-label="Configuration"></section>
     <section class="banner hidden" id="readiness" aria-label="Setup status"></section>
+
+    <section class="livebar hidden" id="livebar" aria-live="polite">
+      <div class="livebar-track"><span class="livebar-fill" id="liveFill"></span></div>
+      <div class="livebar-copy">
+        <span class="live-pill">LIVE</span>
+        <strong id="liveStep">Starting…</strong>
+        <span id="liveDetail" class="muted"></span>
+      </div>
+    </section>
 
     <main>
       <div class="column">
@@ -30,7 +51,10 @@
 
         <section class="card">
           <h2>Risk verdict</h2>
-          <div id="verdict" class="verdict empty">No run yet. Press <strong>Run Sentinel</strong> to evaluate the current head of the branch.</div>
+          <div id="verdict" class="verdict empty">
+            No run yet. Press <strong>Run Sentinel</strong> (or hit <kbd>R</kbd>) to evaluate the
+            current head of the branch.
+          </div>
         </section>
 
         <section class="card">
@@ -42,7 +66,10 @@
       <div class="column">
         <section class="card">
           <h2>Artifacts</h2>
-          <div id="artifacts" class="artifacts empty">Jira issues, Netlify deploys and the Notion report will appear here as the agent creates them.</div>
+          <div id="artifacts" class="artifacts empty">
+            Jira issues, Netlify deploys and the Notion report will appear here as the agent creates
+            them.
+          </div>
         </section>
 
         <section class="card">
@@ -53,12 +80,19 @@
           <div class="calls-wrap">
             <table class="calls">
               <thead>
-                <tr><th>Integration</th><th>Method</th><th>ms</th><th></th></tr>
+                <tr>
+                  <th>Integration</th>
+                  <th>Method</th>
+                  <th>ms</th>
+                  <th></th>
+                </tr>
               </thead>
               <tbody id="calls"></tbody>
             </table>
           </div>
-          <p class="empty" id="callsEmpty">Each row is one <code>swytchcode exec</code> against a live API.</p>
+          <p class="empty" id="callsEmpty">
+            Each row is one <code>swytchcode exec</code> against a live API.
+          </p>
         </section>
 
         <section class="card">
@@ -69,9 +103,11 @@
     </main>
 
     <section class="card history-card">
-      <h2>Run history</h2>
+      <h2>Run history <span class="hint">click a row to inspect</span></h2>
       <div id="history" class="history empty">No previous runs in this session.</div>
     </section>
+
+    <div class="toast hidden" id="toast" role="status"></div>
 
     <script src="/app.js" type="module"></script>
   </body>
